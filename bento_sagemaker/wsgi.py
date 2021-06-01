@@ -66,7 +66,7 @@ class BentomlSagemakerServer:
         self.app.run(port=AWS_SAGEMAKER_SERVE_PORT)
 
 
-api_name = os.environ.get('API_NAME', None)
-model_service = load_from_dir('/bento')
+api_name = os.environ.get("API_NAME", None)
+model_service = load_from_dir("/bento")
 server = BentomlSagemakerServer(model_service, api_name)
 app = server.app
