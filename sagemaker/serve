@@ -61,4 +61,4 @@ def _serve(bento_server_timeout: int, bento_server_workers: int):
 if __name__ == '__main__':
     gunicorn_timeout = os.environ['BENTOML_GUNICORN_TIMEOUT']
     worker_count = os.environ['BENTOML_GUNICORN_NUM_OF_WORKERS']
-    _serve(gunicorn_timeout, bento)
+    _serve(gunicorn_timeout, worker_count)

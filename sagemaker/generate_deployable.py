@@ -52,19 +52,15 @@ def generate_sagemaker_target(bento_metadata, bento_path, sagemaker_project_dir)
     # permission 755 is required for entry script 'serve'
     os.chmod(os.path.join(sagemaker_project_dir, "serve"), 0o755)
 
-    # generate readme
-    readme_file_path = os.path.join(dir_name, "deployment_guide.md")
-    shutil.copy(
-        readme_file_path, os.path.join(sagemaker_project_dir, "deployment_guide.md")
-    )
-
     return sagemaker_project_dir
 
 
-if __name__ == '__main__':
-    bento_metadata = load_bento_service_metadata(sys.argv[0])
-    deployable_path = os.path.join(
-        sys.argv[1],
-        f"{bento_metadata.name}_{bento_metadata.version}_sagemaker_deployable",
+def generate_deployable(bento_bundle_path, deployment_name):
+    bento_metadata = load_bento_service_metadata(bento_bundle_path)
+
+    dir_name = f'{bento_metadata.name}_{bento_metadata.version}_sagemaker_deployable'
+    print(dir_name)
+    sagemaker_project_dir = generate_sagemaker_target(
+        bento_metadata, bento_bundle_path, os.path.abspath(dir_name)
     )
-    print(generate_sagemaker_target(bento_metadata, sys.argv[0], deployable_path))
+    return sagemaker_project_dir, bento_metadata.name, bento_metadata.version
