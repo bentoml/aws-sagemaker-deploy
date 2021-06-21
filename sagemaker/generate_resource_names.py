@@ -39,20 +39,17 @@ def generate_aws_compatible_string(*items, max_length=63):
 
 
 def generate_resource_names(deployment_name):
-    sagemaker_model_repo_name = generate_aws_compatible_string(
-        deployment_name,
-        'repo'
-    )
-    sagemaker_model_name = generate_aws_compatible_string(
-        deployment_name,
-        'model'
-    )
+    sagemaker_model_repo_name = generate_aws_compatible_string(deployment_name, "repo")
+    sagemaker_model_name = generate_aws_compatible_string(deployment_name, "model")
     sagemaker_endpoint_config_name = generate_aws_compatible_string(
-        deployment_name,
-        'config'
+        deployment_name, "config"
     )
     sagemaker_endpoint_name = generate_aws_compatible_string(
-        deployment_name,
-        'endpoint'
+        deployment_name, "endpoint"
     )
-    return sagemaker_model_repo_name, sagemaker_model_name, sagemaker_endpoint_config_name, sagemaker_endpoint_name
+    return (
+        sagemaker_model_repo_name,
+        sagemaker_model_name,
+        sagemaker_endpoint_config_name,
+        sagemaker_endpoint_name,
+    )

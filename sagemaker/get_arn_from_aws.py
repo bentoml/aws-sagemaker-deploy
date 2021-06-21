@@ -12,9 +12,9 @@ def get_arn_role_from_current_aws_user(sts_arn):
             policy_document = role["AssumeRolePolicyDocument"]
             statement = policy_document["Statement"][0]
             if (
-                    "Service" in statement["Principal"]
-                    and statement["Effect"] == "Allow"
-                    and "sagemaker.amazonaws.com" in statement["Principal"]["Service"]
+                "Service" in statement["Principal"]
+                and statement["Effect"] == "Allow"
+                and "sagemaker.amazonaws.com" in statement["Principal"]["Service"]
             ):
                 arn = role["Arn"]
         if arn is None:
@@ -36,7 +36,7 @@ def get_arn_from_aws():
     sts_client = boto3.client("sts")
     identity = sts_client.get_caller_identity()
     sts_arn = identity["Arn"]
-    account = identity['Account']
+    account = identity["Account"]
     arn = get_arn_role_from_current_aws_user(sts_arn)
 
     return arn, account

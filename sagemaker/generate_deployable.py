@@ -58,7 +58,7 @@ def generate_sagemaker_target(bento_metadata, bento_path, sagemaker_project_dir)
 def generate_deployable(bento_bundle_path, deployment_name):
     bento_metadata = load_bento_service_metadata(bento_bundle_path)
 
-    dir_name = f'{bento_metadata.name}_{bento_metadata.version}_sagemaker_deployable'
+    dir_name = f"{bento_metadata.name}_{bento_metadata.version}_sagemaker_deployable"
     print(dir_name)
     sagemaker_project_dir = generate_sagemaker_target(
         bento_metadata, bento_bundle_path, os.path.abspath(dir_name)
