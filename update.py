@@ -18,7 +18,18 @@ from sagemaker.generate_model_info import generate_model_info
 from sagemaker.generate_docker_image_tag import generate_docker_image_tag
 
 
+<<<<<<< HEAD
 def update_deployment(bento_bundle_path, deployment_name, config_json):
+=======
+if __name__ == "__main__":
+    if len(sys.argv) < 4:
+        raise Exception("Please provide deployment name, bundle path and API name")
+    deployment_name = sys.argv[1]
+    bento_bundle_path = sys.argv[2]
+    api_name = sys.argv[3]
+    config_json = sys.argv[4] if len(sys.argv) == 5 else "sagemaker_config.json"
+
+>>>>>>> 267cbfc (small fixes and formating)
     (
         model_repo_name,
         model_name,
@@ -48,12 +59,19 @@ def update_deployment(bento_bundle_path, deployment_name, config_json):
     model_info = generate_model_info(
         model_name,
         image_tag,
+<<<<<<< HEAD
         deployment_config["api_name"],
         deployment_config["timeout"],
         deployment_config["num_of_workers"],
     )
 
     print(f"Create Sagemaker model {model_name}")
+=======
+        api_name,
+        deployment_config["timeout"],
+        deployment_config["num_of_workers"],
+    )
+>>>>>>> 267cbfc (small fixes and formating)
     run_shell_command(
         [
             "aws",
@@ -73,7 +91,10 @@ def update_deployment(bento_bundle_path, deployment_name, config_json):
         deployment_config["initial_instance_count"],
         deployment_config["instance_type"],
     )
+<<<<<<< HEAD
     print(f"Create Sagemaker endpoint confg {endpoint_config_name}")
+=======
+>>>>>>> 267cbfc (small fixes and formating)
     if deployment_config["enable_data_capture"] is False:
         run_shell_command(
             [
@@ -105,7 +126,10 @@ def update_deployment(bento_bundle_path, deployment_name, config_json):
             ]
         )
 
+<<<<<<< HEAD
     print(f"Update Sagemaker endpoint {endpoint_name}")
+=======
+>>>>>>> 267cbfc (small fixes and formating)
     run_shell_command(
         [
             "aws",
@@ -117,6 +141,7 @@ def update_deployment(bento_bundle_path, deployment_name, config_json):
             endpoint_config_name,
         ]
     )
+<<<<<<< HEAD
 
 
 if __name__ == "__main__":
@@ -127,3 +152,5 @@ if __name__ == "__main__":
     config_json = sys.argv[3] if len(sys.argv) == 4 else "sagemaker_config.json"
 
     update_deployment(bento_bundle_path, deployment_name, config_json)
+=======
+>>>>>>> 267cbfc (small fixes and formating)
