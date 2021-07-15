@@ -119,6 +119,12 @@ deploy_to_sagemaker(BENTO_BUNDLE_PATH, DEPLOYMENT_NAME, CONFIG_JSON)
 
 * `region`: AWS region where Sagemaker endpoint is deploying to
 
+* `iam_role`: (optional) if provided with an AWS Role name, that role will be
+used for creating the Sagemaker endpoint. Make sure this Role has
+AmazonSagemakerFullAccess and ECR - BatchGetImage permissions. If this option is
+not provided a role with the sagemaker permissions will be selected for you
+(based on the roles in your aws-cli profile).
+
 * `instance_type`: The ML compute instance type for Sagemaker endpoint. See https://docs.aws.amazon.com/cli/latest/reference/sagemaker/create-endpoint-config.html for available instance types
 
 * `initial_instance_count`: Number of instances to launch initially.
