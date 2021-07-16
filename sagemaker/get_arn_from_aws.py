@@ -1,11 +1,15 @@
 import boto3
 
 
-def get_arn_role_from_current_aws_user(sts_arn):
+def get_arn_role_from_current_aws_user(sts_arn, iam_role=None):
     sts_arn_list = sts_arn.split(":")
     type_role = sts_arn_list[-1].split("/")
     iam_client = boto3.client("iam")
-    if type_role[0] in ("user", "root"):
+
+    if iam_role is not None:
+        role_response = iam_client.get_role(RoleName=iam_role)
+        return role_response["Role"]["Arn"]
+    elif type_role[0] in ("user", "root"):
         role_list = iam_client.list_roles()
         arn = None
         for role in role_list["Roles"]:
@@ -32,11 +36,11 @@ def get_arn_role_from_current_aws_user(sts_arn):
     )
 
 
-def get_arn_from_aws():
+def get_arn_from_aws(iam_role=None):
     sts_client = boto3.client("sts")
     identity = sts_client.get_caller_identity()
     sts_arn = identity["Arn"]
     account = identity["Account"]
-    arn = get_arn_role_from_current_aws_user(sts_arn)
+    arn = get_arn_role_from_current_aws_user(sts_arn, iam_role)
 
     return arn, account

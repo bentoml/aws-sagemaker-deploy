@@ -15,12 +15,15 @@
 import os
 
 from bentoml import load_from_dir
+from bentoml.types import HTTPRequest
 from flask import Flask, Response, request
 
 
 def setup_bento_service_api_route(app, api):
     def view_function():
-        return api.handle_request(request)
+        req = HTTPRequest.from_flask_request(request)
+        response = api.handle_request(req)
+        return response.to_flask_response()
 
     app.add_url_rule(
         rule="/invocations",

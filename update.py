@@ -50,7 +50,7 @@ def update_deployment(bento_bundle_path, deployment_name, config_json):
         image_tag,
         deployment_config["api_name"],
         deployment_config["timeout"],
-        deployment_config["num_of_workers"],
+        deployment_config["workers"],
     )
 
     print(f"Create Sagemaker model {model_name}")
@@ -73,6 +73,7 @@ def update_deployment(bento_bundle_path, deployment_name, config_json):
         deployment_config["initial_instance_count"],
         deployment_config["instance_type"],
     )
+
     print(f"Create Sagemaker endpoint confg {endpoint_config_name}")
     if deployment_config["enable_data_capture"] is False:
         run_shell_command(
@@ -104,6 +105,7 @@ def update_deployment(bento_bundle_path, deployment_name, config_json):
                 data_capture_config,
             ]
         )
+
 
     print(f"Update Sagemaker endpoint {endpoint_name}")
     run_shell_command(

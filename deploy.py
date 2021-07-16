@@ -29,7 +29,7 @@ def deploy_to_sagemaker(bento_bundle_path, deployment_name, config_json):
         bento_bundle_path, deployment_name
     )
 
-    arn, aws_account_id = get_arn_from_aws()
+    arn, aws_account_id = get_arn_from_aws(deployment_config.get('iam_role'))
 
     print(f"Create ECR repo {model_repo_name}")
     registry_id, registry_uri = create_ecr_repository_if_not_exists(
