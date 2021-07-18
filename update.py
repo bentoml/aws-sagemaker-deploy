@@ -20,17 +20,19 @@ from sagemaker.cloudformation_template import generate_api_gateway_template
 
 
 def update_deployment(bento_bundle_path, deployment_name, config_json):
+    # Create deployable
+    deployable_path, bento_name, bento_version = generate_deployable(
+        bento_bundle_path, deployment_name
+    )
+    # Generate names
     (
         model_repo_name,
         model_name,
         endpoint_config_name,
         endpoint_name,
         api_gateway_name,
-    ) = generate_resource_names(deployment_name)
+    ) = generate_resource_names(deployment_name, bento_version)
     deployment_config = get_configuration_value(config_json)
-    deployable_path, bento_name, bento_version = generate_deployable(
-        bento_bundle_path, deployment_name
-    )
 
     # generate cf template for API Gateway for Sagemaker Endpoint
     template_file_path = generate_api_gateway_template(
@@ -148,8 +150,8 @@ def update_deployment(bento_bundle_path, deployment_name, config_json):
 if __name__ == "__main__":
     if len(sys.argv) != 4:
         raise Exception("Please provide deployment name, bundle path and API name")
-    deployment_name = sys.argv[1]
-    bento_bundle_path = sys.argv[2]
+    bento_bundle_path = sys.argv[1]
+    deployment_name = sys.argv[2]
     config_json = sys.argv[3] if len(sys.argv) == 4 else "sagemaker_config.json"
 
     update_deployment(bento_bundle_path, deployment_name, config_json)

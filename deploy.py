@@ -19,17 +19,19 @@ from sagemaker.cloudformation_template import generate_api_gateway_template
 
 
 def deploy_to_sagemaker(bento_bundle_path, deployment_name, config_json):
+    # create deployable
+    deployable_path, bento_name, bento_version = generate_deployable(
+        bento_bundle_path, deployment_name
+    )
+    # generate names
     (
         model_repo_name,
         model_name,
         endpoint_config_name,
         endpoint_name,
         api_gateway_name,
-    ) = generate_resource_names(deployment_name)
+    ) = generate_resource_names(deployment_name, bento_version)
     deployment_config = get_configuration_value(config_json)
-    deployable_path, bento_name, bento_version = generate_deployable(
-        bento_bundle_path, deployment_name
-    )
 
     # generate cf template for API Gateway for Sagemaker Endpoint
     template_file_path = generate_api_gateway_template(

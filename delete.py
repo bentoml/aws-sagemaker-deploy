@@ -13,19 +13,22 @@ def delete_deployment(deployment_name):
         api_gateway_name,
     ) = generate_resource_names(deployment_name)
 
+    # deletes endpoint and compute instances associated with it.
     run_shell_command(
         ["aws", "sagemaker", "delete-endpoint", "--endpoint-name", endpoint_name]
     )
-    run_shell_command(
-        [
-            "aws",
-            "sagemaker",
-            "delete-endpoint-config",
-            "--endpoint-config-name",
-            endpoint_config_name,
-        ]
-    )
-    run_shell_command(["aws", "sagemaker", "delete-model", "--model-name", model_name])
+
+    # Currently deleting of models and endpoint-configurations is not done.
+    # run_shell_command(
+    # [
+    # "aws",
+    # "sagemaker",
+    # "delete-endpoint-config",
+    # "--endpoint-config-name",
+    # endpoint_config_name,
+    # ]
+    # )
+    # run_shell_command(["aws", "sagemaker", "delete-model", "--model-name", model_name])
 
     # delete API Gateway Cloudformation Stack
     run_shell_command(
