@@ -35,6 +35,11 @@ def delete_deployment(deployment_name):
         ["aws", "cloudformation", "delete-stack", "--stack-name", api_gateway_name]
     )
 
+    # delete API Gateway Cloudformation Stack
+    run_shell_command(
+        ["aws", "cloudformation", "delete-stack", "--stack-name", api_gateway_name]
+    )
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
