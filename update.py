@@ -16,6 +16,7 @@ from sagemaker.generate_resource_names import generate_resource_names
 from sagemaker.generate_endpoint_config import generate_endpoint_config
 from sagemaker.generate_model_info import generate_model_info
 from sagemaker.generate_docker_image_tag import generate_docker_image_tag
+from sagemaker.cloudformation_template import generate_api_gateway_template
 
 
 def update_deployment(bento_bundle_path, deployment_name, config_json):
@@ -24,10 +25,19 @@ def update_deployment(bento_bundle_path, deployment_name, config_json):
         model_name,
         endpoint_config_name,
         endpoint_name,
+        api_gateway_name,
     ) = generate_resource_names(deployment_name)
     deployment_config = get_configuration_value(config_json)
     deployable_path, bento_name, bento_version = generate_deployable(
         bento_bundle_path, deployment_name
+    )
+
+    # generate cf template for API Gateway for Sagemaker Endpoint
+    template_file_path = generate_api_gateway_template(
+        project_dir=deployable_path,
+        api_gateway_name=api_gateway_name,
+        api_name=deployment_config["api_name"],
+        endpoint_name=endpoint_name,
     )
 
     arn, aws_account_id = get_arn_from_aws()
@@ -120,6 +130,20 @@ def update_deployment(bento_bundle_path, deployment_name, config_json):
         ]
     )
 
+    print(f"Create API Gateway {api_gateway_name}")
+    run_shell_command(
+        [
+            "aws",
+            "cloudformation",
+            "deploy",
+            "--stack-name",
+            api_gateway_name,
+            "--template-file",
+            template_file_path,
+            "--capabilities",
+            "CAPABILITY_IAM",
+        ]
+    )
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:

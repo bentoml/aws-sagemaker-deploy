@@ -5,9 +5,13 @@ from sagemaker.generate_resource_names import generate_resource_names
 
 
 def delete_deployment(deployment_name):
-    _, model_name, endpoint_config_name, endpoint_name = generate_resource_names(
-        deployment_name
-    )
+    (
+        _,
+        model_name,
+        endpoint_config_name,
+        endpoint_name,
+        api_gateway_name,
+    ) = generate_resource_names(deployment_name)
 
     run_shell_command(
         ["aws", "sagemaker", "delete-endpoint", "--endpoint-name", endpoint_name]
@@ -22,6 +26,11 @@ def delete_deployment(deployment_name):
         ]
     )
     run_shell_command(["aws", "sagemaker", "delete-model", "--model-name", model_name])
+
+    # delete API Gateway Cloudformation Stack
+    run_shell_command(
+        ["aws", "cloudformation", "delete-stack", "--stack-name", api_gateway_name]
+    )
 
 
 if __name__ == "__main__":
