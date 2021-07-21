@@ -6,7 +6,7 @@ from sagemaker.generate_resource_names import generate_resource_names
 
 
 def describe_deployment(deployment_name):
-    _, _, _, endpoint_name = generate_resource_names(deployment_name)
+    _, _, _, endpoint_name, _ = generate_resource_names(deployment_name)
 
     result = run_shell_command(
         ["aws", "sagemaker", "describe-endpoint", "--endpoint-name", endpoint_name]

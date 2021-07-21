@@ -15,32 +15,46 @@ from sagemaker.generate_resource_names import generate_resource_names
 from sagemaker.generate_endpoint_config import generate_endpoint_config
 from sagemaker.generate_model_info import generate_model_info
 from sagemaker.generate_docker_image_tag import generate_docker_image_tag
+from sagemaker.cloudformation_template import generate_api_gateway_template
 
 
 def deploy_to_sagemaker(bento_bundle_path, deployment_name, config_json):
+    # create deployable
+    deployable_path, bento_name, bento_version = generate_deployable(
+        bento_bundle_path, deployment_name
+    )
+    # generate names
     (
         model_repo_name,
         model_name,
         endpoint_config_name,
         endpoint_name,
-    ) = generate_resource_names(deployment_name)
+        api_gateway_name,
+    ) = generate_resource_names(deployment_name, bento_version)
     deployment_config = get_configuration_value(config_json)
-    deployable_path, bento_name, bento_version = generate_deployable(
-        bento_bundle_path, deployment_name
+
+    # generate cf template for API Gateway for Sagemaker Endpoint
+    template_file_path = generate_api_gateway_template(
+        project_dir=deployable_path,
+        api_gateway_name=api_gateway_name,
+        api_name=deployment_config["api_name"],
+        endpoint_name=endpoint_name,
     )
 
-    arn, aws_account_id = get_arn_from_aws(deployment_config.get('iam_role'))
+    arn, aws_account_id = get_arn_from_aws(deployment_config.get("iam_role"))
 
     print(f"Create ECR repo {model_repo_name}")
     registry_id, registry_uri = create_ecr_repository_if_not_exists(
-        deployment_config["region"], model_repo_name,
+        deployment_config["region"],
+        model_repo_name,
     )
 
     _, username, password = get_ecr_login_info(deployment_config["region"], registry_id)
     image_tag = generate_docker_image_tag(registry_uri, bento_name, bento_version)
     print(f"Build and push image {image_tag}")
     build_docker_image(
-        context_path=deployable_path, image_tag=image_tag,
+        context_path=deployable_path,
+        image_tag=image_tag,
     )
     push_docker_image_to_repository(image_tag, username=username, password=password)
 
@@ -114,6 +128,21 @@ def deploy_to_sagemaker(bento_bundle_path, deployment_name, config_json):
             endpoint_name,
             "--endpoint-config-name",
             endpoint_config_name,
+        ]
+    )
+
+    print(f"Create API Gateway {api_gateway_name}")
+    run_shell_command(
+        [
+            "aws",
+            "cloudformation",
+            "deploy",
+            "--stack-name",
+            api_gateway_name,
+            "--template-file",
+            template_file_path,
+            "--capabilities",
+            "CAPABILITY_IAM",
         ]
     )
 
