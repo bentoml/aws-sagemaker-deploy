@@ -31,28 +31,53 @@ for deploying BentoService to AWS Sagemaker without the additional process and w
 
     #Sample output
     Create ECR repo my-sagemaker-deployment-repo
-    Build and push image 192023623294.dkr.ecr.us-west-2.amazonaws.com/my-sagemaker-deployment-repo:irisclassifier-20210630132202_b1fe9d
-    Create Sagemaker model my-sagemaker-deployment-model
-    Create Sagemaker endpoint confg my-sagemaker-deployment-config
-    Create Sagemaker endpoint my-sagemaker-deployment-endpoint
-
+    Build and push image 1234.dkr.ecr.ap-south-1.amazonaws.com/my-sagemaker-deployment-repo:irisclassifier-20210726160058_ca2fac
+    Deploying stack my-sagemaker-deployment
+    Done!
+    ```
 
     Get Sagemaker deployment information and status
 
-    ```bash
+    ```
     $ python describe.py my-sagemaker-deployment
 
     # Sample output
-    [
-      {
-        "EndpointName": "my-sagemaker-deployment-endpoint",
-        "EndpointArn": "arn:aws:sagemaker:us-west-2:192023623294:endpoint/my-sagemaker-deployment-endpoint",
-        "EndpointConfigName": "my-sagemaker-deployment-config",
-        "EndpointStatus": "Creating",
-        "CreationTime": "2021-06-30T15:30:28.554000-07:00",
-        "LastModifiedTime": "2021-06-30T15:30:28.554000-07:00"
-      },
-    ]
+    {
+      "Stacks": [
+        {
+          "StackId": "arn:aws:cloudformation:ap-south-1:1234:stack/my-sagemaker-deployment-endpoint/08b61cb0-ee02-11eb-a637-020384318d50",
+          "StackName": "my-sagemaker-deployment-endpoint",
+          "ChangeSetId": "arn:aws:cloudformation:ap-south-1:1234:changeSet/awscli-cloudformation-package-deploy-1627297805/608bd7e3-6321-4e3a-9e2c-81a9c8ac0
+                "Description": "An API Gateway to invoke Sagemaker Endpoint",
+          "CreationTime": "2021-07-26T11:10:06.918000+00:00",
+          "LastUpdatedTime": "2021-07-26T11:10:12.310000+00:00",
+          "RollbackConfiguration": {},
+          "StackStatus": "CREATE_COMPLETE",
+          "DisableRollback": false,
+          "NotificationARNs": [],
+          "Capabilities": [
+            "CAPABILITY_IAM"
+                ],
+          "Outputs": [
+            {
+              "OutputKey": "OutputApiId",
+              "OutputValue": "yr3v9vh407",
+              "Description": "Api generated Id",
+              "ExportName": "OutputApiId"
+            },
+            {
+              "OutputKey": "EndpointURL",
+              "OutputValue": "yr3v9vh407.execute-api.ap-south-1.amazonaws.com/prod"
+            }
+           ],
+          "Tags": [],
+          "EnableTerminationProtection": false,
+          "DriftInformation": {
+            "StackDriftStatus": "NOT_CHECKED"
+          }
+        }
+      ]
+    }
     ```
 
 3. Make sample request against deployed service
@@ -62,7 +87,7 @@ for deploying BentoService to AWS Sagemaker without the additional process and w
         --header "Content-Type: application/json" \
         --request POST \
         --data '[[5.1, 3.5, 1.4, 0.2]]' \
-        https://btml-test-script.herokuapp.com/predict
+        yr3v9vh407.execute-api.ap-south-1.amazonaws.com/prod/predict
 
     # Sample Output
     HTTP/1.1 200 OK
