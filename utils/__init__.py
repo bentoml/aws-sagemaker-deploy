@@ -2,6 +2,7 @@ import boto3
 import base64
 import json
 import subprocess
+import os
 import docker
 
 
@@ -79,3 +80,36 @@ def push_docker_image_to_repository(
         docker_client.images.push(**docker_push_kwags)
     except docker.errors.APIError as error:
         raise Exception(f"Failed to push docker image {image_tag}: {error}")
+
+
+def gen_cloudformation_template_with_resources(resources: dict, project_dir):
+    """
+    Generates the cloudformation template file with the `resources` argument.
+
+    resources: a dict containing all the resouces that should be present in the
+               cloudformation stack
+    """
+
+    cf_template = {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "An API Gateway to invoke Sagemaker Endpoint",
+        "Resources": resources,
+        "Outputs": {
+            "OutputApiId": {
+                "Value": {"Ref": "ApiGatewayRestApi"},
+                "Description": "Api generated Id",
+                "Export": {"Name": "OutputApiId"},
+            },
+            "EndpointURL": {
+                "Value": {
+                    "Fn::Sub": "${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/${ApiGatewayStage}"
+                }
+            },
+        },
+    }
+
+    template_file_path = os.path.join(project_dir, "api_template.json")
+    with open(template_file_path, "w") as f:
+        json.dump(cf_template, f)
+
+    return template_file_path

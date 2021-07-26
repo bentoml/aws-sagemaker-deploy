@@ -7,15 +7,18 @@ from utils import (
     get_ecr_login_info,
     build_docker_image,
     push_docker_image_to_repository,
+    gen_cloudformation_template_with_resources,
 )
-from sagemaker.generate_data_capture_config import generate_data_capture_config
 from sagemaker.generate_deployable import generate_deployable
 from sagemaker.get_arn_from_aws import get_arn_from_aws
 from sagemaker.generate_resource_names import generate_resource_names
-from sagemaker.generate_endpoint_config import generate_endpoint_config
-from sagemaker.generate_model_info import generate_model_info
 from sagemaker.generate_docker_image_tag import generate_docker_image_tag
-from sagemaker.cloudformation_template import generate_api_gateway_template
+from sagemaker.generate_resources import (
+    gen_model,
+    gen_endpoint,
+    gen_endpoint_config,
+    gen_api_gateway,
+)
 
 
 def deploy_to_sagemaker(bento_bundle_path, deployment_name, config_json):
@@ -32,14 +35,6 @@ def deploy_to_sagemaker(bento_bundle_path, deployment_name, config_json):
         api_gateway_name,
     ) = generate_resource_names(deployment_name, bento_version)
     deployment_config = get_configuration_value(config_json)
-
-    # generate cf template for API Gateway for Sagemaker Endpoint
-    template_file_path = generate_api_gateway_template(
-        project_dir=deployable_path,
-        api_gateway_name=api_gateway_name,
-        api_name=deployment_config["api_name"],
-        endpoint_name=endpoint_name,
-    )
 
     arn, aws_account_id = get_arn_from_aws(deployment_config.get("iam_role"))
 
@@ -58,87 +53,46 @@ def deploy_to_sagemaker(bento_bundle_path, deployment_name, config_json):
     )
     push_docker_image_to_repository(image_tag, username=username, password=password)
 
-    model_info = generate_model_info(
-        model_name,
-        image_tag,
-        deployment_config["api_name"],
-        deployment_config["timeout"],
-        deployment_config["workers"],
-    )
-
-    print(f"Create Sagemaker model {model_name}")
-    run_shell_command(
-        [
-            "aws",
-            "sagemaker",
-            "create-model",
-            "--model-name",
+    # specifies resources - model, endpoint-config, endpoint and api-gateway
+    sagemaker_resources = {}
+    sagemaker_resources.update(
+        gen_model(
             model_name,
-            "--primary-container",
-            model_info,
-            "--execution-role-arn",
+            image_tag,
             arn,
-        ]
+            deployment_config["api_name"],
+            deployment_config["timeout"],
+            deployment_config["workers"],
+        )
     )
 
-    production_variants = generate_endpoint_config(
-        model_name,
-        deployment_config["initial_instance_count"],
-        deployment_config["instance_type"],
-    )
-    print(f"Create Sagemaker endpoint confg {endpoint_config_name}")
-    if deployment_config["enable_data_capture"] is False:
-        run_shell_command(
-            [
-                "aws",
-                "sagemaker",
-                "create-endpoint-config",
-                "--endpoint-config-name",
-                endpoint_config_name,
-                "--production-variants",
-                production_variants,
-            ]
-        )
-    else:
-        data_capture_config = generate_data_capture_config(
-            deployment_config["data_capture_sample_percent"],
-            deployment_config["data_capture_s3_prefix"],
-        )
-        run_shell_command(
-            [
-                "aws",
-                "sagemaker",
-                "create-endpoint-config",
-                "--endpoint-config-name",
-                endpoint_config_name,
-                "--production-variants",
-                production_variants,
-                "--data-capture-config",
-                data_capture_config,
-            ]
-        )
-
-    print(f"Create Sagemaker endpoint {endpoint_name}")
-    run_shell_command(
-        [
-            "aws",
-            "sagemaker",
-            "create-endpoint",
-            "--endpoint-name",
-            endpoint_name,
-            "--endpoint-config-name",
+    sagemaker_resources.update(
+        gen_endpoint_config(
             endpoint_config_name,
-        ]
+            model_name,
+            deployment_config["initial_instance_count"],
+            deployment_config["instance_type"],
+        )
     )
 
-    print(f"Create API Gateway {api_gateway_name}")
+    sagemaker_resources.update(gen_endpoint(endpoint_name, endpoint_config_name))
+
+    sagemaker_resources.update(
+        gen_api_gateway(api_gateway_name, deployment_config["api_name"], endpoint_name)
+    )
+
+    template_file_path = gen_cloudformation_template_with_resources(
+        sagemaker_resources, deployable_path
+    )
+
+    print(f"Deploying stack {deployment_name}")
     run_shell_command(
         [
             "aws",
             "cloudformation",
             "deploy",
             "--stack-name",
-            api_gateway_name,
+            endpoint_name,
             "--template-file",
             template_file_path,
             "--capabilities",
@@ -155,3 +109,4 @@ if __name__ == "__main__":
     config_json = sys.argv[3] if len(sys.argv) == 4 else "sagemaker_config.json"
 
     deploy_to_sagemaker(bento_bundle_path, deployment_name, config_json)
+    print("Done!")

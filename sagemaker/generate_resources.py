@@ -175,7 +175,9 @@ def gen_api_gateway(api_gateway_name, api_name, endpoint_name):
                                 {
                                     "Effect": "Allow",
                                     "Action": "sagemaker:InvokeEndpoint",
-                                    "Resource": "arn:aws:sagemaker:*:213386773652:endpoint/*",
+                                    "Resource": {
+                                        "Fn::Sub": "arn:aws:sagemaker:*:${AWS::AccountId}:endpoint/*"
+                                    },
                                 }
                             ],
                         },
