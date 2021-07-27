@@ -69,10 +69,15 @@ def update_deployment(bento_bundle_path, deployment_name, config_json):
 
     sagemaker_resources.update(
         gen_endpoint_config(
-            endpoint_config_name,
-            model_name,
-            deployment_config["initial_instance_count"],
-            deployment_config["instance_type"],
+            endpoint_config_name=endpoint_config_name,
+            model_name=model_name,
+            initial_instance_count=deployment_config["initial_instance_count"],
+            instance_type=deployment_config["instance_type"],
+            enable_data_capture=deployment_config.get("enable_data_capture", False),
+            data_capture_s3_prefix=deployment_config.get("data_capture_s3_prefix"),
+            data_capture_sample_percent=deployment_config.get(
+                "data_capture_sample_percent"
+            ),
         )
     )
 

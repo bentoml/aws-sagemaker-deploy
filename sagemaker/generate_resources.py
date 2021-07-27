@@ -26,7 +26,13 @@ def gen_model(model_name, image_tag, execution_role, api_name, timeout, num_of_w
 
 
 def gen_endpoint_config(
-    endpoint_config_name, model_name, initial_instance_count, instance_type
+    endpoint_config_name,
+    model_name,
+    initial_instance_count,
+    instance_type,
+    data_capture_sample_percent,
+    data_capture_s3_prefix,
+    enable_data_capture=False,
 ):
     """
     Generates the endpoint_config for the Sagemaker Endpoint. We can specify all the
@@ -38,6 +44,15 @@ def gen_endpoint_config(
             "DependsOn": "SagemakerModel",
             "Properties": {
                 # "EndpointConfigName": endpoint_config_name,
+                "DataCaptureConfig": {
+                    "EnableCapture": enable_data_capture,
+                    "InitialSamplingPercentage": data_capture_sample_percent,
+                    "DestinationS3Uri": data_capture_s3_prefix,
+                    "CaptureOptions": [
+                        {"CaptureMode": "Input"},
+                        {"CaptureMode": "Output"},
+                    ],
+                },
                 "ProductionVariants": [
                     {
                         "InitialInstanceCount": initial_instance_count,
