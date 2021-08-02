@@ -6,33 +6,30 @@ from sagemaker.generate_resource_names import generate_resource_names
 
 def delete_deployment(deployment_name):
     (
+        ecr_repo_name,
         _,
-        model_name,
-        endpoint_config_name,
+        _,
         endpoint_name,
-        api_gateway_name,
+        _,
     ) = generate_resource_names(deployment_name)
 
-    # deletes endpoint and compute instances associated with it.
+    # delete API Gateway Cloudformation Stack
+    print(f"Deleting Stack {endpoint_name}")
     run_shell_command(
-        ["aws", "sagemaker", "delete-endpoint", "--endpoint-name", endpoint_name]
+        ["aws", "cloudformation", "delete-stack", "--stack-name", endpoint_name]
     )
 
-    # Currently deleting of models and endpoint-configurations is not done.
-    # run_shell_command(
-    # [
-    # "aws",
-    # "sagemaker",
-    # "delete-endpoint-config",
-    # "--endpoint-config-name",
-    # endpoint_config_name,
-    # ]
-    # )
-    # run_shell_command(["aws", "sagemaker", "delete-model", "--model-name", model_name])
-
-    # delete API Gateway Cloudformation Stack
+    # delete ECR Repository
+    print(f"Deleting ECR Repository {ecr_repo_name}")
     run_shell_command(
-        ["aws", "cloudformation", "delete-stack", "--stack-name", api_gateway_name]
+        [
+            "aws",
+            "ecr",
+            "delete-repository",
+            "--repository-name",
+            ecr_repo_name,
+            "--force",
+        ]
     )
 
 

@@ -38,11 +38,13 @@ def generate_aws_compatible_string(*items, max_length=63):
     return name
 
 
-def generate_resource_names(deployment_name, bento_version=''):
+def generate_resource_names(deployment_name, bento_version=""):
     sagemaker_model_repo_name = generate_aws_compatible_string(deployment_name, "repo")
-    sagemaker_model_name = generate_aws_compatible_string(deployment_name, "model", bento_version)
+    sagemaker_model_name = generate_aws_compatible_string(
+        deployment_name, "model", bento_version
+    )
     sagemaker_endpoint_config_name = generate_aws_compatible_string(
-        deployment_name, "config", bento_version
+        deployment_name, "config"
     )
     sagemaker_endpoint_name = generate_aws_compatible_string(
         deployment_name, "endpoint"
