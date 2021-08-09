@@ -17,11 +17,13 @@ for deploying BentoService to AWS Sagemaker without the additional process and w
     - `$ pip install -r requirements.txt`
 
 
-## Deploy Iris Classifier from BentoML quickstart guide to AWS Sagemaker
+## Quickstart
+
+You can try out the deployment script with the IrisClassifier for the iris dataset that is given in the [BentoML quick start guide](https://github.com/bentoml/BentoML/blob/master/guides/quick-start/bentoml-quick-start-guide.ipynb)
 
 1. Build and save Bento Bundle from [BentoML quick start guide](https://github.com/bentoml/BentoML/blob/master/guides/quick-start/bentoml-quick-start-guide.ipynb)
 
-2. Create Sagemaker deployment with the deployment tool
+2. Create Sagemaker deployment with the deployment tool. Make sure you have the configuration file setup for your deployment. You can copy over the [sample config file](sagemaker_config.json) to get started. The config definitions are provided [here](#configuration-options)
 
     Run deploy script in the command line:
 
@@ -110,6 +112,25 @@ for deploying BentoService to AWS Sagemaker without the additional process and w
 
 ## Deployment operations
 
+### configuration options
+
+A sample configuration file has been given has been provided [here](sagemaker_config.json). Feel free to copy it over and change it for you specific deployment values
+
+* `api_name`: User-defined API function for the inference
+* `timeout`: timeout for API request in seconds
+* `workers`: Number of workers for Bento API server
+* `region`: AWS region where Sagemaker endpoint is deploying to
+* `iam_role`: (optional) if provided with an AWS Role name, that role will be
+used for creating the Sagemaker endpoint. Make sure this Role has
+AmazonSagemakerFullAccess and ECR - BatchGetImage permissions. If this option is
+not provided a role with the sagemaker permissions will be selected for you
+(based on the roles in your aws-cli profile).
+* `instance_type`: The ML compute instance type for Sagemaker endpoint. See https://docs.aws.amazon.com/cli/latest/reference/sagemaker/create-endpoint-config.html for available instance types
+* `initial_instance_count`: Number of instances to launch initially.
+* `enable_data_capture`: Enable Sagemaker capture data from requests and responses and store the captured data to AWS S3
+* `data_capture_s3_prefix`: S3 bucket path for store captured data
+* `data_capture_sample_percent`: Percentage of the data will be captured to S3 bucket.
+
 ### Create a new deployment
 
 Use Command line
@@ -132,34 +153,6 @@ from deploy import deploy_to_sagemaker
 
 deploy_to_sagemaker(BENTO_BUNDLE_PATH, DEPLOYMENT_NAME, CONFIG_JSON)
 ```
-
-
-#### Available configuration options for Sagemaker deployment
-
-* `api_name`: User-defined API function for the inference
-
-* `timeout`: timeout for API request in seconds
-
-* `workers`: Number of workers for Bento API server
-
-* `region`: AWS region where Sagemaker endpoint is deploying to
-
-* `iam_role`: (optional) if provided with an AWS Role name, that role will be
-used for creating the Sagemaker endpoint. Make sure this Role has
-AmazonSagemakerFullAccess and ECR - BatchGetImage permissions. If this option is
-not provided a role with the sagemaker permissions will be selected for you
-(based on the roles in your aws-cli profile).
-
-* `instance_type`: The ML compute instance type for Sagemaker endpoint. See https://docs.aws.amazon.com/cli/latest/reference/sagemaker/create-endpoint-config.html for available instance types
-
-* `initial_instance_count`: Number of instances to launch initially.
-
-* `enable_data_capture`: Enable Sagemaker capture data from requests and responses and store the captured data to AWS S3
-
-* `data_capture_s3_prefix`: S3 bucket path for store captured data
-
-* `data_capture_sample_percent`: Percentage of the data will be captured to S3 bucket.
-
 
 ### Update an existing deployment
 
