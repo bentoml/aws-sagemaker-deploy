@@ -11,7 +11,7 @@ FROM {docker_base_image}
 ENV PORT 8080
 EXPOSE $PORT
 
-RUN apt-get update --fix-missing && \
+RUN apt-get update --fix-missing --allow-releaseinfo-change && \
     apt-get install -y nginx && \
     apt-get clean
 
