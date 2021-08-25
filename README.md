@@ -29,7 +29,7 @@ You can try out the deployment script with the IrisClassifier for the iris datas
 
     ```bash
     $ BENTO_BUNDLE_PATH=$(bentoml get IrisClassifier:latest --print-location -q)
-    $ python deploy.py $BENTO_BUNDLE_PATH my-sagemaker-deployment sagemaker_config.json
+    $ python deploy.py $BENTO_BUNDLE_PATH my-sagemaker-deployment --config_json sagemaker_config.json
 
     #Sample output
     Create ECR repo my-sagemaker-deployment-repo
@@ -136,14 +136,14 @@ not provided a role with the sagemaker permissions will be selected for you
 Use Command line
 
 ```bash
-python deploy.py <BENTO_BUNDLE_PATH> <DEPLOYMENT_NAME> <CONFIG_JSON default is sagemaker_config.json>
+python deploy.py <BENTO_BUNDLE_PATH> <DEPLOYMENT_NAME> --config_json <CONFIG_JSON default is sagemaker_config.json>
 ```
 
 For example:
 
 ```bash
 $ MY_BUNDLE_PATH=$(bentoml get IrisClassifier:latest --print-location -q)
-$ python deploy.py $MY_BUNDLE_PATH my_deployment sagemaker_config.json
+$ python deploy.py $MY_BUNDLE_PATH my_deployment --config_json sagemaker_config.json
 ```
 
 Use Python API
@@ -153,6 +153,8 @@ from deploy import deploy_to_sagemaker
 
 deploy_to_sagemaker(BENTO_BUNDLE_PATH, DEPLOYMENT_NAME, CONFIG_JSON)
 ```
+
+To create and push a model image to ECR without deploying the stack, use the flag `--skip_stack_deployment`
 
 ### Update an existing deployment
 

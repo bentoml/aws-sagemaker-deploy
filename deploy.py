@@ -1,3 +1,4 @@
+import argparse
 import sys
 
 from utils import (
@@ -21,7 +22,7 @@ from sagemaker.generate_resources import (
 )
 
 
-def deploy_to_sagemaker(bento_bundle_path, deployment_name, config_json):
+def deploy_to_sagemaker(bento_bundle_path, deployment_name, config_json, skip_stack_deployment):
     # create deployable
     deployable_path, bento_name, bento_version = generate_deployable(
         bento_bundle_path, deployment_name
@@ -53,65 +54,82 @@ def deploy_to_sagemaker(bento_bundle_path, deployment_name, config_json):
     )
     push_docker_image_to_repository(image_tag, username=username, password=password)
 
-    # specifies resources - model, endpoint-config, endpoint and api-gateway
-    sagemaker_resources = {}
-    sagemaker_resources.update(
-        gen_model(
-            model_name,
-            image_tag,
-            arn,
-            deployment_config["api_name"],
-            deployment_config["timeout"],
-            deployment_config["workers"],
+    if skip_stack_deployment:
+        print("Skipping stack deployment")
+    else:
+        # specifies resources - model, endpoint-config, endpoint and api-gateway
+        sagemaker_resources = {}
+        sagemaker_resources.update(
+            gen_model(
+                model_name,
+                image_tag,
+                arn,
+                deployment_config["api_name"],
+                deployment_config["timeout"],
+                deployment_config["workers"],
+            )
         )
-    )
 
-    sagemaker_resources.update(
-        gen_endpoint_config(
-            endpoint_config_name=endpoint_config_name,
-            model_name=model_name,
-            initial_instance_count=deployment_config["initial_instance_count"],
-            instance_type=deployment_config["instance_type"],
-            enable_data_capture=deployment_config.get("enable_data_capture", False),
-            data_capture_s3_prefix=deployment_config.get("data_capture_s3_prefix"),
-            data_capture_sample_percent=deployment_config.get(
-                "data_capture_sample_percent"
-            ),
+        sagemaker_resources.update(
+            gen_endpoint_config(
+                endpoint_config_name=endpoint_config_name,
+                model_name=model_name,
+                initial_instance_count=deployment_config["initial_instance_count"],
+                instance_type=deployment_config["instance_type"],
+                enable_data_capture=deployment_config.get("enable_data_capture", False),
+                data_capture_s3_prefix=deployment_config.get("data_capture_s3_prefix"),
+                data_capture_sample_percent=deployment_config.get(
+                    "data_capture_sample_percent"
+                ),
+            )
         )
-    )
 
-    sagemaker_resources.update(gen_endpoint(endpoint_name, endpoint_config_name))
+        sagemaker_resources.update(gen_endpoint(endpoint_name, endpoint_config_name))
 
-    sagemaker_resources.update(
-        gen_api_gateway(api_gateway_name, deployment_config["api_name"], endpoint_name)
-    )
+        sagemaker_resources.update(
+            gen_api_gateway(api_gateway_name, deployment_config["api_name"], endpoint_name)
+        )
 
-    template_file_path = gen_cloudformation_template_with_resources(
-        sagemaker_resources, deployable_path
-    )
+        template_file_path = gen_cloudformation_template_with_resources(
+            sagemaker_resources, deployable_path
+        )
 
-    print(f"Deploying stack {deployment_name}")
-    run_shell_command(
-        [
-            "aws",
-            "cloudformation",
-            "deploy",
-            "--stack-name",
-            endpoint_name,
-            "--template-file",
-            template_file_path,
-            "--capabilities",
-            "CAPABILITY_IAM",
-        ]
-    )
+        print(f"Deploying stack {deployment_name}")
+        run_shell_command(
+            [
+                "aws",
+                "cloudformation",
+                "deploy",
+                "--stack-name",
+                endpoint_name,
+                "--template-file",
+                template_file_path,
+                "--capabilities",
+                "CAPABILITY_IAM",
+            ]
+        )
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        raise Exception("Please provide deployment name, bundle path and API name")
-    bento_bundle_path = sys.argv[1]
-    deployment_name = sys.argv[2]
-    config_json = sys.argv[3] if len(sys.argv) == 4 else "sagemaker_config.json"
+    parser = argparse.ArgumentParser(description='Build and deploy a BentoML model to AWS Sagemaker.')
 
-    deploy_to_sagemaker(bento_bundle_path, deployment_name, config_json)
+    parser.add_argument('bento_bundle_path', type=str,
+                        help='The bundle path of your BentoML model')
+    parser.add_argument('deployment_name', type=str,
+                        help='The Sagemaker model name')
+    parser.add_argument('--config_json', type=str,
+                        default="sagemaker_config.json",
+                        help='Deployment configuration json (default=sagemaker_config.json)')
+    parser.add_argument('--skip_stack_deployment',
+                        default=False, action='store_true',
+                        help='Skip stack deployment?')
+
+    args = parser.parse_args()
+
+    deploy_to_sagemaker(
+        args.bento_bundle_path, 
+        args.deployment_name, 
+        args.config_json,
+        args.skip_stack_deployment
+    )
     print("Done!")
