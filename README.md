@@ -116,7 +116,7 @@ For example:
 
 ```bash
 $ MY_BUNDLE_PATH=$(bentoml get IrisClassifier:latest --print-location -q)
-$ python deploy.py $MY_BUNDLE_PATH my_deployment sagemaker_config.json
+$ python deploy.py $MY_BUNDLE_PATH my_deployment --config_json sagemaker_config.json
 ```
 
 Use Python API
@@ -126,6 +126,8 @@ from deploy import deploy_to_sagemaker
 
 deploy_to_sagemaker(BENTO_BUNDLE_PATH, DEPLOYMENT_NAME, CONFIG_JSON)
 ```
+
+To create and push a model image to ECR without deploying the stack, use the flag `--skip_stack_deployment`
 
 ### Update an existing deployment
 
