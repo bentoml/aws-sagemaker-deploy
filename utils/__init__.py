@@ -1,9 +1,38 @@
-import boto3
 import base64
 import json
 import subprocess
 import os
+import shutil
+
 import docker
+import boto3
+from rich.console import Console
+
+
+console = Console(highlight=False)
+
+
+def is_present(project_path):
+    """
+    Checks for existing deployable and if found offers users 2 options
+        1. overide the existing repo (usefull if there is only config changes)
+        2. use the existing one for this deployment
+
+    if no existing deployment is found, return false
+    """
+    if os.path.exists(project_path):
+        response = console.input(
+                f"Existing deployable found [[b]{os.path.relpath(project_path)}[/b]]!"
+                " Override? (y/n): "
+        )
+        if response.lower() in ["yes", "y", ""]:
+            print("overriding existing deployable!")
+            shutil.rmtree(project_path)
+            return False
+        elif response.lower() in ["no", "n"]:
+            print("Using existing deployable!")
+            return True
+    return False
 
 
 def run_shell_command(command, shell_mode=False):
@@ -98,11 +127,10 @@ def gen_cloudformation_template_with_resources(resources: dict, project_dir):
             "OutputApiId": {
                 "Value": {"Ref": "ApiGatewayRestApi"},
                 "Description": "Api generated Id",
-                "Export": {"Name": "OutputApiId"},
             },
             "EndpointURL": {
                 "Value": {
-                    "Fn::Sub": "${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/${ApiGatewayStage}"
+                    "Fn::Sub": "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/${ApiGatewayStage}"
                 }
             },
         },
