@@ -4,7 +4,7 @@ from utils import run_shell_command
 from sagemaker.generate_resource_names import generate_resource_names
 
 
-def delete_deployment(deployment_name):
+def delete(deployment_name):
     (
         ecr_repo_name,
         _,
@@ -14,13 +14,12 @@ def delete_deployment(deployment_name):
     ) = generate_resource_names(deployment_name)
 
     # delete API Gateway Cloudformation Stack
-    print(f"Deleting Stack {endpoint_name}")
     run_shell_command(
         ["aws", "cloudformation", "delete-stack", "--stack-name", endpoint_name]
     )
+    print(f"Deleting Stack {endpoint_name}")
 
     # delete ECR Repository
-    print(f"Deleting ECR Repository {ecr_repo_name}")
     run_shell_command(
         [
             "aws",
@@ -31,6 +30,7 @@ def delete_deployment(deployment_name):
             "--force",
         ]
     )
+    print(f"Deleting ECR Repository {ecr_repo_name}")
 
 
 if __name__ == "__main__":
@@ -38,4 +38,4 @@ if __name__ == "__main__":
         raise Exception("Please provide deployment name, bundle path and API name")
     deployment_name = sys.argv[1]
 
-    delete_deployment(deployment_name)
+    delete(deployment_name)
