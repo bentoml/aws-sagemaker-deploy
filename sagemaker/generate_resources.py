@@ -1,4 +1,4 @@
-def gen_model(model_name, image_tag, execution_role, api_name, timeout, num_of_workers):
+def gen_model(model_name, image_tag, api_name, timeout, num_of_workers):
     """
     Generates the Sagemaker model that will be loaded to the endpoint instances.
     """
@@ -8,7 +8,7 @@ def gen_model(model_name, image_tag, execution_role, api_name, timeout, num_of_w
             "Type": "AWS::SageMaker::Model",
             "Properties": {
                 "ModelName": model_name,
-                "ExecutionRoleArn": execution_role,
+                "ExecutionRoleArn": {"Fn::GetAtt": ["ExecutionRole", "Arn"]},
                 "PrimaryContainer": {
                     "Image": image_tag,
                     "ImageConfig": {"RepositoryAccessMode": "Platform"},
@@ -17,6 +17,24 @@ def gen_model(model_name, image_tag, execution_role, api_name, timeout, num_of_w
                         "BENTOML_GUNICORN_TIMEOUT": timeout,
                         "BENTOML_GUNICORN_NUM_OF_WORKERS": num_of_workers,
                     },
+                },
+            },
+        },
+        "ExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
+                    ],
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {"Service": ["sagemaker.amazonaws.com"]},
+                            "Action": ["sts:AssumeRole"],
+                        }
+                    ],
                 },
             },
         },
