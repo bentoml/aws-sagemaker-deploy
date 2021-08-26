@@ -28,7 +28,7 @@ class Setup:
         # make config file
         config = """
             {
-                "region": "ap-south-1",
+                "region": "us-west-1",
                 "api_name": "dfapi",
                 "instance_type": "ml.t2.medium",
                 "initial_instance_count": 1,
