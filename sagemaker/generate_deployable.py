@@ -4,6 +4,8 @@ import sys
 
 from bentoml.saved_bundle import load_bento_service_metadata
 
+from utils import is_present
+
 BENTO_SERVICE_SAGEMAKER_DOCKERFILE = """\
 FROM {docker_base_image}
 
@@ -29,6 +31,10 @@ ENV PATH="/bento:$PATH"
 
 
 def generate_sagemaker_target(bento_metadata, bento_path, sagemaker_project_dir):
+    # check if there is an existing sagemaker_target. prompt user to select
+    if is_present(sagemaker_project_dir):
+        return sagemaker_project_dir
+
     docker_base_image = bento_metadata.env.docker_base_image
     shutil.copytree(bento_path, sagemaker_project_dir)
 

@@ -20,30 +20,24 @@ class Setup:
         """
         Setup the deployment on the deployment choosen
         """
-        self.deployment_name = "ec2_bento_deploy_test"
+        self.deployment_name = "sagemaker_bento_deploy_test"
         self.dirpath = tempfile.mkdtemp()
         print("temp dir {} created!".format(self.dirpath))
         self.saved_dir = os.path.join(self.dirpath, "saved_dir")
 
         # make config file
         config = """
-        {
-          "region": "us-west-1",
-          "ec2_auto_scale": {
-            "min_size": 1,
-            "desired_capacity": 1,
-            "max_size": 1
-          },
-          "instance_type": "t2.micro",
-          "ami_id": "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2",
-          "elb": {
-            "health_check_interval_seconds": 5,
-            "health_check_path": "/healthz",
-            "health_check_port": 5000,
-            "health_check_timeout_seconds": 3,
-            "healthy_threshold_count": 2
-          }
-        }
+            {
+                "region": "us-west-1",
+                "api_name": "dfapi",
+                "instance_type": "ml.t2.medium",
+                "initial_instance_count": 1,
+                "workers": 3,
+                "timeout": 60,
+                "enable_data_capture": false,
+                "data_capture_s3_prefix": "s3://bucket-name/optional/predix",
+                "data_capture_sample_percent": 100
+            }
         """
         self.config_file = os.path.join(self.dirpath, "config.json")
         with open(self.config_file, "w") as f:
@@ -55,26 +49,30 @@ class Setup:
         # test_service.pack()
         test_service.save_to_dir(self.saved_dir)
 
+    @staticmethod
+    def check_if_up(url, num_attempts=5, wait_time=20):
+        attempt = 0
+        while attempt < num_attempts:
+            try:
+                if requests.post(url).status_code == 400:
+                    print("Ok!")
+                    return True
+                else:
+                    print("not Ok", end=" ")
+                    time.sleep(wait_time)
+            except Exception as e:
+                print(e)
+                time.sleep(wait_time)
+            finally:
+                attempt += 1
+        return False
+
     def make_deployment(self):
         deploy(self.saved_dir, self.deployment_name, self.config_file)
         info_json = describe(self.deployment_name, self.config_file)
-        url = info_json["Url"] + "/{}"
+        url = info_json["EndpointURL"] + "/{}"
 
-        # ping /healthz to check if deployment is up
-        attempt = 0
-        print('Checking is service is up...', end='')
-        url_healthz = url.format('healthz')
-        while attempt < 5:
-            try:
-                if requests.get(url_healthz).ok:
-                    print('Ok!')
-                    break
-                else:
-                    time.sleep(20)
-            except Exception:
-                time.sleep(20)
-            finally:
-                attempt += 1
+        self.check_if_up(url.format('dfapi'))
 
         return url
 
@@ -154,7 +152,7 @@ if __name__ == "__main__":
         print("Setup successful")
 
         # list of tests to perform
-        TESTS = [(test_json, "jsonapi"), (test_df, "dfapi"), (test_files, "fileapi")]
+        TESTS = [(test_df, "dfapi")]
 
         for test_func, endpoint in TESTS:
             try:
