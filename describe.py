@@ -38,14 +38,16 @@ def describe(deployment_name, config_file_path):
     outputs = {o["OutputKey"]: o["OutputValue"] for o in outputs}
     info_json.update(outputs)
 
+    info_json.update({'api_name': sagemaker_config['api_name']})
+
     return info_json
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        raise Exception("Please provide deployment name, bundle path and API name")
+    if len(sys.argv) < 3:
+        raise Exception("Please provide deployment name and API name")
     deployment_name = sys.argv[1]
-    config_json = sys.argv[2] if len(sys.argv) == 4 else "lambda_config.json"
+    config_json = sys.argv[2] if len(sys.argv) == 3 else "sagemaker_config.json"
 
     result = describe(deployment_name, config_json)
     pprint(result)
