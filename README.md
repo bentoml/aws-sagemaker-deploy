@@ -1,9 +1,13 @@
-# BentoML Sagemaker deployment tool
+# AWS Sagemaker deployment tool
 
 [![Generic badge](https://img.shields.io/badge/Release-Alpha-<COLOR>.svg)](https://shields.io/)
 
-AWS Sagemaker is a fully managed service for building ML models. BentoML provides great support
+Sagemaker is a fully managed service for building ML models. BentoML provides great support
 for deploying BentoService to AWS Sagemaker without the additional process and work from users. With BentoML, users can enjoy the performance of Sagemaker with any popular ML frameworks.
+
+<p align="center">
+  <img src="demo.gif" alt="demo of aws-lambda-deploy tool"/>
+</p>
 
 ## Prerequisites
 
@@ -12,7 +16,6 @@ for deploying BentoService to AWS Sagemaker without the additional process and w
     - Configure AWS account instruction: https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html
 - Docker is installed and running on the machine.
     - Install instruction: https://docs.docker.com/install
-
 - Install required python packages
     - `$ pip install -r requirements.txt`
 
@@ -23,19 +26,15 @@ You can try out the deployment script with the IrisClassifier for the iris datas
 
 1. Build and save Bento Bundle from [BentoML quick start guide](https://github.com/bentoml/BentoML/blob/master/guides/quick-start/bentoml-quick-start-guide.ipynb)
 
-2. Create Sagemaker deployment with the deployment tool. Make sure you have the configuration file setup for your deployment. You can copy over the [sample config file](sagemaker_config.json) to get started. The config definitions are provided [here](#configuration-options)
+2. Copy and change the [sample config file](sagemaker_config.json) given and change it according to your deployment specifications. Check out the [config section](#configuration-options) to find the differenet options.
 
-    Run deploy script in the command line:
+3. Create Sagemaker deployment with the deployment tool. 
+   
+   Run deploy script in the command line:
 
     ```bash
     $ BENTO_BUNDLE_PATH=$(bentoml get IrisClassifier:latest --print-location -q)
     $ python deploy.py $BENTO_BUNDLE_PATH my-sagemaker-deployment sagemaker_config.json
-
-    #Sample output
-    Create ECR repo my-sagemaker-deployment-repo
-    Build and push image 1234.dkr.ecr.ap-south-1.amazonaws.com/my-sagemaker-deployment-repo:irisclassifier-20210726160058_ca2fac
-    Deploying stack my-sagemaker-deployment
-    Done!
     ```
 
     Get Sagemaker deployment information and status
@@ -45,44 +44,18 @@ You can try out the deployment script with the IrisClassifier for the iris datas
 
     # Sample output
     {
-      "Stacks": [
-        {
-          "StackId": "arn:aws:cloudformation:ap-south-1:1234:stack/my-sagemaker-deployment-endpoint/08b61cb0-ee02-11eb-a637-020384318d50",
-          "StackName": "my-sagemaker-deployment-endpoint",
-          "ChangeSetId": "arn:aws:cloudformation:ap-south-1:1234:changeSet/awscli-cloudformation-package-deploy-1627297805/608bd7e3-6321-4e3a-9e2c-81a9c8ac0
-                "Description": "An API Gateway to invoke Sagemaker Endpoint",
-          "CreationTime": "2021-07-26T11:10:06.918000+00:00",
-          "LastUpdatedTime": "2021-07-26T11:10:12.310000+00:00",
-          "RollbackConfiguration": {},
-          "StackStatus": "CREATE_COMPLETE",
-          "DisableRollback": false,
-          "NotificationARNs": [],
-          "Capabilities": [
-            "CAPABILITY_IAM"
-                ],
-          "Outputs": [
-            {
-              "OutputKey": "OutputApiId",
-              "OutputValue": "yr3v9vh407",
-              "Description": "Api generated Id",
-              "ExportName": "OutputApiId"
-            },
-            {
-              "OutputKey": "EndpointURL",
-              "OutputValue": "yr3v9vh407.execute-api.ap-south-1.amazonaws.com/prod"
-            }
-           ],
-          "Tags": [],
-          "EnableTerminationProtection": false,
-          "DriftInformation": {
-            "StackDriftStatus": "NOT_CHECKED"
-          }
-        }
-      ]
+    │   'StackId': 'arn:aws:cloudformation:ap-south-1:213386773652:stack/iristest-endpoint/edd9d500-095c-11ec-bc08-06418f3882f0',
+    │   'StackName': 'iristest-endpoint',
+    │   'StackStatus': 'CREATE_COMPLETE',
+    │   'CreationTime': '08/30/2021, 06:38:47',
+    │   'LastUpdatedTime': '08/30/2021, 06:38:52',
+    │   'OutputApiId': '2f5qtdd2rf',
+    │   'EndpointURL': 'https://2f5qtdd2rf.execute-api.ap-south-1.amazonaws.com/prod',
+    │   'api_name': 'predict'
     }
     ```
 
-3. Make sample request against deployed service
+4. Make sample request against deployed service. The url for the endpoint given in the output of the describe command or you can also check the API Gateway through the AWS console.
 
     ```bash
     $ curl -i \
@@ -104,7 +77,7 @@ You can try out the deployment script with the IrisClassifier for the iris datas
     [0]%
     ```
 
-4. Delete Sagemaker deployment
+5. Delete Sagemaker deployment
 
     ```bash
     python delete.py my-sagemaker-deployment
@@ -136,7 +109,7 @@ not provided a role with the sagemaker permissions will be selected for you
 Use Command line
 
 ```bash
-python deploy.py <BENTO_BUNDLE_PATH> <DEPLOYMENT_NAME> <CONFIG_JSON default is sagemaker_config.json>
+python deploy.py <BENTO_BUNDLE_PATH> <DEPLOYMENT_NAME> <CONFIG_JSON default is ./sagemaker_config.json>
 ```
 
 For example:
