@@ -93,6 +93,11 @@ A sample configuration file has been given has been provided [here](sagemaker_co
 * `timeout`: timeout for API request in seconds
 * `workers`: Number of workers for Bento API server
 * `region`: AWS region where Sagemaker endpoint is deploying to
+* `skip_stack_deployment`: If this flag is present in the config_file,
+  deployment tool will only build and push the image to ECR and skip creation of
+  sagemaker endpoint resources. With this you get your bentoml model build so
+  that it runs and sagemaker and pushed to ECR and you can use other methods to
+  create the resources to deploy the image.
 * `iam_role`: (optional) if provided with an AWS Role name, that role will be
 used for creating the Sagemaker endpoint. Make sure this Role has
 AmazonSagemakerFullAccess and ECR - BatchGetImage permissions. If this option is
