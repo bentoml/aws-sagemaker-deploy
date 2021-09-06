@@ -25,7 +25,7 @@ def gen_model(model_name, image_tag, api_name, timeout, num_of_workers):
             "Properties": {
                 "ManagedPolicyArns": [
                     "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
-                    ],
+                ],
                 "AssumeRolePolicyDocument": {
                     "Version": "2012-10-17",
                     "Statement": [
@@ -114,6 +114,7 @@ def gen_api_gateway(api_gateway_name, api_name, endpoint_name):
             "Type": "AWS::ApiGateway::RestApi",
             "Properties": {
                 "ApiKeySourceType": "HEADER",
+                "BinaryMediaTypes": ["multipart~1form-data"],
                 "Description": "An API Gateway to invoke Sagemaker Endpoint",
                 "EndpointConfiguration": {"Types": ["EDGE"]},
                 "Name": api_gateway_name,
@@ -133,11 +134,19 @@ def gen_api_gateway(api_gateway_name, api_name, endpoint_name):
                 "ApiKeyRequired": False,
                 "AuthorizationType": "NONE",
                 "HttpMethod": "POST",
+                "RequestParameters": {
+                    "method.request.header.Accept": "false",
+                    "method.request.header.Content-Type": "false",
+                },
                 "Integration": {
                     "ConnectionType": "INTERNET",
                     "Credentials": {"Fn::GetAtt": ["ApiGatewayIamRole", "Arn"]},
                     "IntegrationHttpMethod": "POST",
                     "PassthroughBehavior": "WHEN_NO_MATCH",
+                    "RequestParameters": {
+                        "integration.request.header.Accept": "method.request.header.Accept",
+                        "integration.request.header.Content-Type": "method.request.header.Content-Type",
+                    },
                     "TimeoutInMillis": 29000,
                     "Type": "AWS",
                     "Uri": {
