@@ -14,19 +14,20 @@ def delete(deployment_name, config_json):
     ) = generate_resource_names(deployment_name)
     sagemaker_config = get_configuration_value(config_json)
 
-    # delete API Gateway Cloudformation Stack
-    run_shell_command(
-        [
-            "aws",
-            "--region",
-            sagemaker_config["region"],
-            "cloudformation",
-            "delete-stack",
-            "--stack-name",
-            endpoint_name,
-        ]
-    )
-    print(f"Deleting Stack {endpoint_name}")
+    if not sagemaker_config.get('skip_stack_deployment', False):
+        # delete API Gateway Cloudformation Stack
+        run_shell_command(
+            [
+                "aws",
+                "--region",
+                sagemaker_config["region"],
+                "cloudformation",
+                "delete-stack",
+                "--stack-name",
+                endpoint_name,
+            ]
+        )
+        print(f"Deleting Stack {endpoint_name}")
 
     # delete ECR Repository
     run_shell_command(

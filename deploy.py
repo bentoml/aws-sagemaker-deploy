@@ -12,7 +12,6 @@ from utils import (
     console,
 )
 from sagemaker.generate_deployable import generate_deployable
-from sagemaker.get_arn_from_aws import get_arn_from_aws
 from sagemaker.generate_resource_names import generate_resource_names
 from sagemaker.generate_docker_image_tag import generate_docker_image_tag
 from sagemaker.generate_resources import (
@@ -55,6 +54,12 @@ def deploy(bento_bundle_path, deployment_name, config_json):
     with console.status("Pushing image to ECR"):
         push_docker_image_to_repository(image_tag, username=username, password=password)
     console.print(f"Image built and pushed [[b]{image_tag}[/b]]")
+
+    # if skip_stack_deployment is given in the config file, return
+    if deployment_config.get("skip_stack_deployment", False):
+        console.print("Skipping creation of sagemaker resources. 'skip_stack_deployment'"
+                      " option is set in the config")
+        return
 
     # specifies resources - model, endpoint-config, endpoint and api-gateway
     sagemaker_resources = {}
@@ -101,7 +106,7 @@ def deploy(bento_bundle_path, deployment_name, config_json):
             [
                 "aws",
                 "--region",
-                deployment_config['region'],
+                deployment_config["region"],
                 "cloudformation",
                 "deploy",
                 "--stack-name",

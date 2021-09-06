@@ -11,6 +11,11 @@ from rich.pretty import pprint
 def describe(deployment_name, config_file_path):
     _, _, _, endpoint_name, _ = generate_resource_names(deployment_name)
     sagemaker_config = get_configuration_value(config_file_path)
+
+    # if skip_stack_deployment is present in config.
+    if sagemaker_config.get('skip_stack_deployment', False):
+        return None
+
     cf_client = boto3.client("cloudformation", sagemaker_config["region"])
     try:
         stack_info = cf_client.describe_stacks(StackName=endpoint_name)
