@@ -49,8 +49,8 @@ def describe(deployment_name, config_file_path):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        raise Exception("Please provide deployment name and API name")
+    if len(sys.argv) < 2:
+        raise Exception("Please provide deployment name and config name")
     deployment_name = sys.argv[1]
     config_json = sys.argv[2] if len(sys.argv) == 3 else "sagemaker_config.json"
 
