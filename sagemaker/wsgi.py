@@ -13,21 +13,25 @@
 # limitations under the License.
 
 import os
+import logging
 
 from bentoml import load_from_dir
 from bentoml.types import HTTPRequest
 from flask import Flask, Response, request
 
 
-def setup_bento_service_api_route(app, api):
+def setup_bento_service_api_route(app, bento_service):
     def view_function():
         req = HTTPRequest.from_flask_request(request)
+        api = bento_service.get_inference_api(
+            request.headers.get("X-Amzn-SageMaker-Custom-Attributes")
+        )
         response = api.handle_request(req)
         return response.to_flask_response()
 
     app.add_url_rule(
         rule="/invocations",
-        endpoint=api.name,
+        endpoint="invocations",
         view_func=view_function,
         methods=["POST"],
     )
@@ -45,7 +49,7 @@ def setup_routes(app, bento_service, api_name):
     """
     app.add_url_rule("/ping", "ping", ping_view_func)
     api = bento_service.get_inference_api(api_name)
-    setup_bento_service_api_route(app, api)
+    setup_bento_service_api_route(app, bento_service)
 
 
 # AWS Sagemaker requires custom inference docker container to implement a web server
