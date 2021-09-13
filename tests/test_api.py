@@ -29,7 +29,6 @@ class Setup:
         config = """
             {
                 "region": "us-west-1",
-                "api_name": "dfapi",
                 "instance_type": "ml.t2.medium",
                 "initial_instance_count": 1,
                 "workers": 3,
@@ -72,12 +71,12 @@ class Setup:
         info_json = describe(self.deployment_name, self.config_file)
         url = info_json["EndpointURL"] + "/{}"
 
-        self.check_if_up(url.format('dfapi'))
+        self.check_if_up(url.format("dfapi"), num_attempts=2)
 
         return url
 
     def teardown(self):
-        delete(self.deployment_name, self.config_file)
+        # delete(self.deployment_name, self.config_file)
         shutil.rmtree(self.dirpath)
         print("Removed {}!".format(self.dirpath))
 
@@ -111,7 +110,7 @@ def test_df(url):
     # request as csv
     headers = {"content-type": "text/csv"}
     csv = DataFrame(input_array).to_csv(index=False)
-    resp = requests.post(url.format("dfapi"), data=csv, headers=headers)
+    resp = requests.post(url, data=csv, headers=headers)
     assert resp.ok
     assert DataFrame(resp.json()).to_json() == DataFrame(input_array).to_json()
 
@@ -132,7 +131,7 @@ def test_files(url):
 
     # request mulitpart/form-data
     file = {"audio": ("test", binary_data)}
-    resp = requests.post(url.format("fileapi"), files=file)
+    resp = requests.post(url, files=file)
     assert resp.ok
     assert resp.content == b'"test"'
 
@@ -152,7 +151,7 @@ if __name__ == "__main__":
         print("Setup successful")
 
         # list of tests to perform
-        TESTS = [(test_df, "dfapi")]
+        TESTS = [(test_df, "dfapi"), (test_files, "fileapi"), (test_json, "jsonapi")]
 
         for test_func, endpoint in TESTS:
             try:

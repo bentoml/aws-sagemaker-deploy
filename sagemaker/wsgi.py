@@ -41,14 +41,13 @@ def ping_view_func():
     return Response(response="\n", status=200, mimetype="application/json")
 
 
-def setup_routes(app, bento_service, api_name):
+def setup_routes(app, bento_service):
     """
     Setup routes required for AWS sagemaker
     /ping
     /invocations
     """
     app.add_url_rule("/ping", "ping", ping_view_func)
-    api = bento_service.get_inference_api(api_name)
     setup_bento_service_api_route(app, bento_service)
 
 
@@ -62,18 +61,17 @@ class BentomlSagemakerServer:
     BentomlSagemakerServer create an AWS Sagemaker compatibility REST API model server
     """
 
-    def __init__(self, bento_service, api_name, app_name=None):
+    def __init__(self, bento_service, app_name=None):
         app_name = bento_service.name if app_name is None else app_name
 
         self.bento_service = bento_service
         self.app = Flask(app_name)
-        setup_routes(self.app, self.bento_service, api_name)
+        setup_routes(self.app, self.bento_service)
 
     def start(self):
         self.app.run(port=AWS_SAGEMAKER_SERVE_PORT)
 
 
-api_name = os.environ.get("API_NAME", None)
 model_service = load_from_dir("/bento")
-server = BentomlSagemakerServer(model_service, api_name)
+server = BentomlSagemakerServer(model_service)
 app = server.app

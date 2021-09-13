@@ -2,7 +2,7 @@ from bentoml.saved_bundle import load_bento_service_metadata
 from sagemaker.lambda_function import LAMBDA_FUNCION_CODE
 
 
-def gen_model(model_name, image_tag, api_name, timeout, num_of_workers):
+def gen_model(model_name, image_tag, timeout, num_of_workers):
     """
     Generates the Sagemaker model that will be loaded to the endpoint instances.
     """
@@ -17,7 +17,6 @@ def gen_model(model_name, image_tag, api_name, timeout, num_of_workers):
                     "Image": image_tag,
                     "ImageConfig": {"RepositoryAccessMode": "Platform"},
                     "Environment": {
-                        "API_NAME": api_name,
                         "BENTOML_GUNICORN_TIMEOUT": timeout,
                         "BENTOML_GUNICORN_NUM_OF_WORKERS": num_of_workers,
                     },
@@ -112,7 +111,7 @@ def gen_endpoint(endpoint_name, endpoint_config_name):
     return endpoint
 
 
-def gen_api_gateway(api_gateway_name, bento_bundle_path):
+def gen_api_gateway(api_gateway_name, endpoint_name, bento_bundle_path):
     # basic API Gateway Config
     api_gateway = {
         "HttpApi": {
@@ -125,12 +124,12 @@ def gen_api_gateway(api_gateway_name, bento_bundle_path):
         },
         "HttpApiIntegration": {
             "Type": "AWS::ApiGatewayV2::Integration",
-            "DependsOn": ["EchoFunction"],
+            "DependsOn": ["Lambdafn"],
             "Properties": {
                 "Description": "Lambda Integration",
                 "IntegrationMethod": "POST",
                 "IntegrationUri": {
-                    "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EchoFunction.Arn}/invocations"
+                    "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Lambdafn.Arn}/invocations"
                 },
                 "PayloadFormatVersion": "2.0",
                 "ApiId": {"Ref": "HttpApi"},
@@ -151,7 +150,9 @@ def gen_api_gateway(api_gateway_name, bento_bundle_path):
                 "Runtime": "python3.9",
                 "Role": "arn:aws:iam::213386773652:role/service-role/EchoRequest-role-q2dtxtq7",
                 "Handler": "index.lambda_handler",
-                "Code": {"ZipFile": LAMBDA_FUNCION_CODE},
+                "Code": {
+                    "ZipFile": LAMBDA_FUNCION_CODE.format(endpoint_name=endpoint_name)
+                },
                 "Description": "Parse request and invoke Sagmeker Endpoint",
                 "TracingConfig": {"Mode": "Active"},
             },
@@ -159,7 +160,7 @@ def gen_api_gateway(api_gateway_name, bento_bundle_path):
         "ApigatewayPermission": {
             "Type": "AWS::Lambda::Permission",
             "Properties": {
-                "FunctionName": {"Fn::GetAtt": ["EchoFunction", "Arn"]},
+                "FunctionName": {"Fn::GetAtt": ["Lambdafn", "Arn"]},
                 "Action": "lambda:InvokeFunction",
                 "Principal": "apigateway.amazonaws.com",
                 "SourceArn": {
@@ -175,7 +176,7 @@ def gen_api_gateway(api_gateway_name, bento_bundle_path):
         route_name = f"{api.name}Route".lower()
         api_gateway[route_name] = {
             "Type": "AWS::ApiGatewayV2::Route",
-            "DependsOn": ["HttpApiIntegration", "EchoFunction"],
+            "DependsOn": ["HttpApiIntegration", "Lambdafn"],
             "Properties": {
                 "ApiId": {"Ref": "HttpApi"},
                 "RouteKey": f"POST /{api.route}",

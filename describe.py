@@ -13,7 +13,7 @@ def describe(deployment_name, config_file_path):
     sagemaker_config = get_configuration_value(config_file_path)
 
     # if skip_stack_deployment is present in config.
-    if sagemaker_config.get('skip_stack_deployment', False):
+    if sagemaker_config.get("skip_stack_deployment", False):
         return None
 
     cf_client = boto3.client("cloudformation", sagemaker_config["region"])
@@ -42,8 +42,6 @@ def describe(deployment_name, config_file_path):
     outputs = stack_info.get("Outputs")
     outputs = {o["OutputKey"]: o["OutputValue"] for o in outputs}
     info_json.update(outputs)
-
-    info_json.update({'api_name': sagemaker_config['api_name']})
 
     return info_json
 
