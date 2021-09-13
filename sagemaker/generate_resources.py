@@ -144,11 +144,30 @@ def gen_api_gateway(api_gateway_name, endpoint_name, bento_bundle_path):
                 "ApiId": {"Ref": "HttpApi"},
             },
         },
+        "LambdaExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess",
+                    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+                ],
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {"Service": ["lambda.amazonaws.com"]},
+                            "Action": ["sts:AssumeRole"],
+                        }
+                    ],
+                },
+            },
+        },
         "Lambdafn": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
                 "Runtime": "python3.9",
-                "Role": "arn:aws:iam::213386773652:role/service-role/EchoRequest-role-q2dtxtq7",
+                "Role": {"Fn::Sub": "${LambdaExecutionRole.Arn}"},
                 "Handler": "index.lambda_handler",
                 "Code": {
                     "ZipFile": LAMBDA_FUNCION_CODE.format(endpoint_name=endpoint_name)

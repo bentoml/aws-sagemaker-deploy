@@ -76,7 +76,7 @@ class Setup:
         return url
 
     def teardown(self):
-        # delete(self.deployment_name, self.config_file)
+        delete(self.deployment_name, self.config_file)
         shutil.rmtree(self.dirpath)
         print("Removed {}!".format(self.dirpath))
 
