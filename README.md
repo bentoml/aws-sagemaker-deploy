@@ -89,7 +89,6 @@ You can try out the deployment script with the IrisClassifier for the iris datas
 
 A sample configuration file has been given has been provided [here](sagemaker_config.json). Feel free to copy it over and change it for you specific deployment values
 
-* `api_name`: User-defined API function for the inference
 * `timeout`: timeout for API request in seconds
 * `workers`: Number of workers for Bento API server
 * `region`: AWS region where Sagemaker endpoint is deploying to
@@ -98,11 +97,6 @@ A sample configuration file has been given has been provided [here](sagemaker_co
   sagemaker endpoint resources. With this you get your bentoml model build so
   that it runs and sagemaker and pushed to ECR and you can use other methods to
   create the resources to deploy the image.
-* `iam_role`: (optional) if provided with an AWS Role name, that role will be
-used for creating the Sagemaker endpoint. Make sure this Role has
-AmazonSagemakerFullAccess and ECR - BatchGetImage permissions. If this option is
-not provided a role with the sagemaker permissions will be selected for you
-(based on the roles in your aws-cli profile).
 * `instance_type`: The ML compute instance type for Sagemaker endpoint. See https://docs.aws.amazon.com/cli/latest/reference/sagemaker/create-endpoint-config.html for available instance types
 * `initial_instance_count`: Number of instances to launch initially.
 * `enable_data_capture`: Enable Sagemaker capture data from requests and responses and store the captured data to AWS S3
