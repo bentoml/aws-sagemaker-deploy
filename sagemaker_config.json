@@ -1,7 +1,7 @@
 {
     "region": "us-west-1",
     "api_name": "predict",
-    "skip_stack_deployment": "false",
+    "skip_stack_deployment": false,
     "instance_type": "ml.t2.medium",
     "initial_instance_count": 1,
     "workers": 3,

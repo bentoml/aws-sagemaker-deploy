@@ -124,14 +124,11 @@ def gen_cloudformation_template_with_resources(resources: dict, project_dir):
         "Description": "An API Gateway to invoke Sagemaker Endpoint",
         "Resources": resources,
         "Outputs": {
-            "OutputApiId": {
-                "Value": {"Ref": "ApiGatewayRestApi"},
-                "Description": "Api generated Id",
-            },
             "EndpointURL": {
                 "Value": {
-                    "Fn::Sub": "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/${ApiGatewayStage}"
-                }
+                    "Fn::Sub": "${HttpApi.ApiEndpoint}"
+                },
+                "Description": "The endpoint for Sagemaker inference"
             },
         },
     }

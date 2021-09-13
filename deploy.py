@@ -57,8 +57,10 @@ def deploy(bento_bundle_path, deployment_name, config_json):
 
     # if skip_stack_deployment is given in the config file, return
     if deployment_config.get("skip_stack_deployment", False):
-        console.print("Skipping creation of sagemaker resources. 'skip_stack_deployment'"
-                      " option is set in the config")
+        console.print(
+            "Skipping creation of sagemaker resources. 'skip_stack_deployment'"
+            " option is set in the config"
+        )
         return
 
     # specifies resources - model, endpoint-config, endpoint and api-gateway
@@ -90,9 +92,7 @@ def deploy(bento_bundle_path, deployment_name, config_json):
     # generate config for sagemaker endpoint
     sagemaker_resources.update(gen_endpoint(endpoint_name, endpoint_config_name))
     # generae config for API Gateway
-    sagemaker_resources.update(
-        gen_api_gateway(api_gateway_name, deployment_config["api_name"], endpoint_name)
-    )
+    sagemaker_resources.update(gen_api_gateway(api_gateway_name, bento_bundle_path))
 
     template_file_path = gen_cloudformation_template_with_resources(
         sagemaker_resources, deployable_path

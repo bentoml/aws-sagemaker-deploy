@@ -1,3 +1,7 @@
+from bentoml.saved_bundle import load_bento_service_metadata
+from sagemaker.lambda_function import LAMBDA_FUNCION_CODE
+
+
 def gen_model(model_name, image_tag, api_name, timeout, num_of_workers):
     """
     Generates the Sagemaker model that will be loaded to the endpoint instances.
@@ -25,7 +29,7 @@ def gen_model(model_name, image_tag, api_name, timeout, num_of_workers):
             "Properties": {
                 "ManagedPolicyArns": [
                     "arn:aws:iam::aws:policy/AmazonSageMakerFullAccess"
-                    ],
+                ],
                 "AssumeRolePolicyDocument": {
                     "Version": "2012-10-17",
                     "Statement": [
@@ -108,116 +112,77 @@ def gen_endpoint(endpoint_name, endpoint_config_name):
     return endpoint
 
 
-def gen_api_gateway(api_gateway_name, api_name, endpoint_name):
+def gen_api_gateway(api_gateway_name, bento_bundle_path):
+    # basic API Gateway Config
     api_gateway = {
-        "ApiGatewayRestApi": {
-            "Type": "AWS::ApiGateway::RestApi",
+        "HttpApi": {
+            "Type": "AWS::ApiGatewayV2::Api",
             "Properties": {
-                "ApiKeySourceType": "HEADER",
-                "Description": "An API Gateway to invoke Sagemaker Endpoint",
-                "EndpointConfiguration": {"Types": ["EDGE"]},
                 "Name": api_gateway_name,
+                "Description": "API Gateway proxy to lambda function that exposes sagemaker endpoint",
+                "ProtocolType": "HTTP",
             },
         },
-        "ApiGatewayResource": {
-            "Type": "AWS::ApiGateway::Resource",
+        "HttpApiIntegration": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "DependsOn": ["EchoFunction"],
             "Properties": {
-                "ParentId": {"Fn::GetAtt": ["ApiGatewayRestApi", "RootResourceId"]},
-                "PathPart": api_name,
-                "RestApiId": {"Ref": "ApiGatewayRestApi"},
-            },
-        },
-        "ApiGatewayMethod": {
-            "Type": "AWS::ApiGateway::Method",
-            "Properties": {
-                "ApiKeyRequired": False,
-                "AuthorizationType": "NONE",
-                "HttpMethod": "POST",
-                "Integration": {
-                    "ConnectionType": "INTERNET",
-                    "Credentials": {"Fn::GetAtt": ["ApiGatewayIamRole", "Arn"]},
-                    "IntegrationHttpMethod": "POST",
-                    "PassthroughBehavior": "WHEN_NO_MATCH",
-                    "TimeoutInMillis": 29000,
-                    "Type": "AWS",
-                    "Uri": {
-                        "Fn::Sub": f"arn:aws:apigateway:${{AWS::Region}}:runtime.sagemaker:path/endpoints/{endpoint_name}/invocations"
-                    },
-                    "IntegrationResponses": [
-                        {"SelectionPattern": "2\\d{2}", "StatusCode": 200},
-                        {"SelectionPattern": "4\\d{2}", "StatusCode": 400},
-                        {"SelectionPattern": "5\\d{2}", "StatusCode": 500},
-                    ],
+                "Description": "Lambda Integration",
+                "IntegrationMethod": "POST",
+                "IntegrationUri": {
+                    "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EchoFunction.Arn}/invocations"
                 },
-                "MethodResponses": [
-                    {"StatusCode": 200},
-                    {"StatusCode": 400},
-                    {"StatusCode": 500},
-                ],
-                "OperationName": "invokeSagemaker",
-                "ResourceId": {"Ref": "ApiGatewayResource"},
-                "RestApiId": {"Ref": "ApiGatewayRestApi"},
+                "PayloadFormatVersion": "2.0",
+                "ApiId": {"Ref": "HttpApi"},
+                "IntegrationType": "AWS_PROXY",
             },
         },
-        "ApiGatewayModel": {
-            "Type": "AWS::ApiGateway::Model",
+        "DefaultStage": {
+            "Type": "AWS::ApiGatewayV2::Stage",
             "Properties": {
-                "ContentType": "application/json",
-                "RestApiId": {"Ref": "ApiGatewayRestApi"},
-                "Schema": {},
+                "StageName": "$default",
+                "AutoDeploy": True,
+                "ApiId": {"Ref": "HttpApi"},
             },
         },
-        "ApiGatewayStage": {
-            "Type": "AWS::ApiGateway::Stage",
+        "Lambdafn": {
+            "Type": "AWS::Lambda::Function",
             "Properties": {
-                "DeploymentId": {"Ref": "ApiGatewayDeployment"},
-                "Description": "Sagemaker prod API",
-                "RestApiId": {"Ref": "ApiGatewayRestApi"},
-                "StageName": "prod",
+                "Runtime": "python3.9",
+                "Role": "arn:aws:iam::213386773652:role/service-role/EchoRequest-role-q2dtxtq7",
+                "Handler": "index.lambda_handler",
+                "Code": {"ZipFile": LAMBDA_FUNCION_CODE},
+                "Description": "Parse request and invoke Sagmeker Endpoint",
+                "TracingConfig": {"Mode": "Active"},
             },
         },
-        "ApiGatewayDeployment": {
-            "Type": "AWS::ApiGateway::Deployment",
-            "DependsOn": "ApiGatewayMethod",
+        "ApigatewayPermission": {
+            "Type": "AWS::Lambda::Permission",
             "Properties": {
-                "Description": "Sagemaker API deployment",
-                "RestApiId": {"Ref": "ApiGatewayRestApi"},
-            },
-        },
-        "ApiGatewayIamRole": {
-            "Type": "AWS::IAM::Role",
-            "Properties": {
-                "AssumeRolePolicyDocument": {
-                    "Version": "2012-10-17",
-                    "Statement": [
-                        {
-                            "Sid": "",
-                            "Effect": "Allow",
-                            "Principal": {"Service": ["apigateway.amazonaws.com"]},
-                            "Action": ["sts:AssumeRole"],
-                        }
-                    ],
+                "FunctionName": {"Fn::GetAtt": ["EchoFunction", "Arn"]},
+                "Action": "lambda:InvokeFunction",
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": {
+                    "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/*"
                 },
-                "Path": "/",
-                "Policies": [
-                    {
-                        "PolicyName": "SagemakerAccess",
-                        "PolicyDocument": {
-                            "Version": "2012-10-17",
-                            "Statement": [
-                                {
-                                    "Effect": "Allow",
-                                    "Action": "sagemaker:InvokeEndpoint",
-                                    "Resource": {
-                                        "Fn::Sub": "arn:aws:sagemaker:*:${AWS::AccountId}:endpoint/*"
-                                    },
-                                }
-                            ],
-                        },
-                    }
-                ],
             },
         },
     }
+
+    # add routes from bentoservice to API Gateway
+    bento_metadata = load_bento_service_metadata(bento_bundle_path)
+    for api in bento_metadata.apis:
+        route_name = f"{api.name}Route".lower()
+        api_gateway[route_name] = {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "DependsOn": ["HttpApiIntegration", "EchoFunction"],
+            "Properties": {
+                "ApiId": {"Ref": "HttpApi"},
+                "RouteKey": f"POST /{api.route}",
+                "Target": {
+                    "Fn::Join": ["/", ["integrations", {"Ref": "HttpApiIntegration"}]]
+                },
+            },
+        }
 
     return api_gateway
