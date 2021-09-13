@@ -76,7 +76,7 @@ class Setup:
         return url
 
     def teardown(self):
-        delete(self.deployment_name, self.config_file)
+        # delete(self.deployment_name, self.config_file)
         shutil.rmtree(self.dirpath)
         print("Removed {}!".format(self.dirpath))
 
@@ -136,6 +136,44 @@ def test_files(url):
     assert resp.content == b'"test"'
 
 
+def test_image(url):
+    """
+    GIVEN the api is deployed
+    WHEN an image is passed as bytes or mulitpart/form-data
+    THEN it accepts it and returns the size
+    """
+    import numpy as np
+    from PIL import Image
+    from io import BytesIO
+
+    img = Image.fromarray(np.uint8(np.random.rand(10, 10, 3) * 256))
+    byte_io = BytesIO()
+    img.save(byte_io, "png")
+    img_bytes = byte_io.getvalue()
+    byte_io.close()
+
+    # request with raw data
+    headers = {
+        "content-type": "image/jpeg",
+    }
+    resp = requests.post(url.format("imageapi"), headers=headers, data=img_bytes)
+    assert resp.ok
+    assert resp.content == b"[10, 10, 3]"
+
+    # request mulitpart/form-data
+    resp = requests.post(
+        url.format("imageapi"),
+        files={
+            "image": (
+                "test.png",
+                img_bytes,
+            )
+        },
+    )
+    assert resp.ok
+    assert resp.content == b"[10, 10, 3]"
+
+
 if __name__ == "__main__":
 
     setup = Setup()
@@ -151,7 +189,12 @@ if __name__ == "__main__":
         print("Setup successful")
 
         # list of tests to perform
-        TESTS = [(test_df, "dfapi"), (test_files, "fileapi"), (test_json, "jsonapi")]
+        TESTS = [
+            (test_df, "dfapi"),
+            (test_files, "fileapi"),
+            (test_json, "jsonapi"),
+            (test_image, "imageapi"),
+        ]
 
         for test_func, endpoint in TESTS:
             try:
