@@ -111,7 +111,7 @@ def gen_endpoint(endpoint_name, endpoint_config_name):
     return endpoint
 
 
-def gen_api_gateway(api_gateway_name, endpoint_name, bento_bundle_path):
+def gen_api_gateway(api_gateway_name, endpoint_name, timeout, bento_bundle_path):
     # basic API Gateway Config
     api_gateway = {
         "HttpApi": {
@@ -167,12 +167,13 @@ def gen_api_gateway(api_gateway_name, endpoint_name, bento_bundle_path):
             "Type": "AWS::Lambda::Function",
             "Properties": {
                 "Runtime": "python3.9",
+                "Description": "Parse request and invoke Sagmeker Endpoint",
+                "Timeout": timeout,
                 "Role": {"Fn::Sub": "${LambdaExecutionRole.Arn}"},
                 "Handler": "index.lambda_handler",
                 "Code": {
                     "ZipFile": LAMBDA_FUNCION_CODE.format(endpoint_name=endpoint_name)
                 },
-                "Description": "Parse request and invoke Sagmeker Endpoint",
                 "TracingConfig": {"Mode": "Active"},
             },
         },

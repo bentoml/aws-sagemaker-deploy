@@ -91,7 +91,14 @@ def deploy(bento_bundle_path, deployment_name, config_json):
     # generate config for sagemaker endpoint
     sagemaker_resources.update(gen_endpoint(endpoint_name, endpoint_config_name))
     # generae config for API Gateway
-    sagemaker_resources.update(gen_api_gateway(api_gateway_name, endpoint_name, bento_bundle_path))
+    sagemaker_resources.update(
+        gen_api_gateway(
+            api_gateway_name,
+            endpoint_name,
+            deployment_config["timeout"],
+            bento_bundle_path,
+        )
+    )
 
     template_file_path = gen_cloudformation_template_with_resources(
         sagemaker_resources, deployable_path
