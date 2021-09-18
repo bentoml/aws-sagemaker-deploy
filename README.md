@@ -82,6 +82,19 @@ You can try out the deployment script with the IrisClassifier for the iris datas
     ```bash
     python delete.py my-sagemaker-deployment
     ```
+## The Internals
+
+This section is all about how the deployment tool works internally and how the actual deployment happens so that if needed you can modify this tool
+to suit your deployment needs. Under the hood the deployment tool modifies the Bento Image to make it compatible with the [Sagemaker Endpoint](https://docs.aws.amazon.com/sagemaker/latest/dg/your-algorithms-inference-code.html). 
+This image is then built and pushed into an ECR repository. All the other components are created as part of the cloudformation stack, which creates
+the API Gateway, Lambda Function, Sagmaker Model, Sagemaker Endpoint Config and Sagemaker Endpoint. We have used an HTTP API Gateway + Lambda Function design to
+expose the Sagemaker Endpoint since the Lambda function gives us a lot more flexibility.
+
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/5261489/133879514-5b91eb1d-d7ae-4f03-965d-98107bd19962.png" alt="invocation arch"/>
+</p>
+
+For each bento endpoint that you have, the tool creates the corresponding route in HTTP Gateway which invokes the Lambda function which in turn invokes the Sagmaker endpoint and proxies the results back to the client. Since we are using Cloudformation to create the stack you can easily change/modify the resource to match your deployment needs. [`generate_resources.py`](sagemaker/generate_resources.py) contains the functions used to generate the cloudformation template which you can modifiy to suit you needs.
 
 ## Deployment operations
 
