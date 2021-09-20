@@ -1,8 +1,7 @@
 import sys
 
-from utils import run_shell_command, console
+from utils import console
 from deploy import deploy
-from describe import describe
 
 
 def update(bento_bundle_path, deployment_name, config_json):
@@ -11,24 +10,6 @@ def update(bento_bundle_path, deployment_name, config_json):
     the stack too.
     """
     deploy(bento_bundle_path, deployment_name, config_json)
-
-    # point API Gateway to new the updated deployment
-    deploy_desc = describe(deployment_name, config_json)
-    api_gateway_id = deploy_desc.get('OutputApiId')
-    run_shell_command(
-        [
-            "aws",
-            "apigateway",
-            "create-deployment",
-            "--rest-api-id",
-            api_gateway_id,
-            "--stage-name",
-            "prod",
-            "--description",
-            "deploying update at ",
-        ]
-    )
-    print("Updating API Gateway")
 
 
 if __name__ == "__main__":
