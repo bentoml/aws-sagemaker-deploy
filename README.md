@@ -134,9 +134,9 @@ $ python deploy.py $MY_BUNDLE_PATH my_deployment --config_json sagemaker_config.
 Use Python API
 
 ```python
-from deploy import deploy_to_sagemaker
+from deploy import deploy
 
-deploy_to_sagemaker(BENTO_BUNDLE_PATH, DEPLOYMENT_NAME, CONFIG_JSON)
+deploy(BENTO_BUNDLE_PATH, DEPLOYMENT_NAME, CONFIG_JSON)
 ```
 
 To create and push a model image to ECR without deploying the stack, use the flag `--skip_stack_deployment`
@@ -152,9 +152,9 @@ python update.py <DEPLOYMENT_NAME> <BENTO_BUNDLE_PATH> <API_NAME> <CONFIG_JSON d
 Use Python API
 
 ```python
-from update import update_deployment
+from update import update
 
-update_deployment(BENTO_BUNDLE_PATH, DEPLOYMENT_NAME, CONFIG_JSON)
+update(BENTO_BUNDLE_PATH, DEPLOYMENT_NAME, CONFIG_JSON)
 ```
 
 ### Describe deployment status and information
@@ -169,8 +169,8 @@ python get.py <DEPLOYMENT_NAME>
 Use Python API
 
 ```python
-from describe import describe_deployment
-describe_deployment(DEPLOYMENT_NAME)
+from describe import describe
+describe(DEPLOYMENT_NAME)
 ```
 
 ### Delete deployment
@@ -184,7 +184,7 @@ python delete.py <DEPLOYMENT_NAME>
 Use Python API
 
 ```python
-from delete import delete_deployment
+from delete import delete
 
-delete_deployment(DEPLOYMENT_NAME)
+delete(DEPLOYMENT_NAME)
 ```
