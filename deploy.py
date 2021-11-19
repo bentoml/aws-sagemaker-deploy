@@ -19,6 +19,7 @@ from sagemaker.generate_resources import (
     gen_endpoint,
     gen_endpoint_config,
     gen_api_gateway,
+    gen_endpoint_scaling,
 )
 
 
@@ -34,6 +35,7 @@ def deploy(bento_bundle_path, deployment_name, config_json):
         endpoint_config_name,
         endpoint_name,
         api_gateway_name,
+        scaling_policy_name,
     ) = generate_resource_names(deployment_name, bento_version)
     deployment_config = get_configuration_value(config_json)
 
@@ -90,6 +92,16 @@ def deploy(bento_bundle_path, deployment_name, config_json):
     )
     # generate config for sagemaker endpoint
     sagemaker_resources.update(gen_endpoint(endpoint_name, endpoint_config_name))
+    scaling = deployment_config.get("scaling", None)
+    if scaling:
+        # assert deployment_config[""]
+        sagemaker_resources.update(
+            gen_endpoint_scaling(
+                endpoint_name,
+                scaling_policy_name,
+                scaling,
+            )
+        )
     # generae config for API Gateway
     sagemaker_resources.update(
         gen_api_gateway(
