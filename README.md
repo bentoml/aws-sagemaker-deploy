@@ -82,6 +82,35 @@ You can try out the deployment script with the IrisClassifier for the iris datas
     ```bash
     python delete.py my-sagemaker-deployment
     ```
+
+## Autoscaling
+
+You can also enable autoscaling for your deployment by adding `scaling` parameter in the config file as follows:
+
+    ```json
+    {
+        "region": "us-west-1",
+        "skip_stack_deployment": false,
+        "instance_type": "ml.t2.medium",
+        "initial_instance_count": 1,
+        "workers": 3,
+        "timeout": 60,
+        "enable_data_capture": false,
+        "data_capture_s3_prefix": "s3://bucket-name/optional/predix",
+        "data_capture_sample_percent": 100,
+        "scaling": {
+            "disblae": false,
+            "min_instances": 1,
+            "max_instances": 4,
+            "scale_out_cooldown": 300,
+            "scale_in_cooldown": 300,
+            "rps_per_instance": 0.9
+        }
+    }
+    ```
+
+If you ignore `scaling` parameter, autoscaling will be disabled. Or you can disable autoscaling by setting `scaling.disable` to `true` in the config file.
+
 ## The Internals
 
 This section is all about how the deployment tool works internally and how the actual deployment happens so that if needed you can modify this tool
@@ -115,6 +144,13 @@ A sample configuration file has been given has been provided [here](sagemaker_co
 * `enable_data_capture`: Enable Sagemaker capture data from requests and responses and store the captured data to AWS S3
 * `data_capture_s3_prefix`: S3 bucket path for store captured data
 * `data_capture_sample_percent`: Percentage of the data will be captured to S3 bucket.
+* `scaling`: Enable autoscaling for Sagemaker endpoint.
+* `scaling.disable`: Disable autoscaling for Sagemaker endpoint.
+* `scaling.min_instances`: Minimum number of instances for autoscaling.
+* `scaling.max_instances`: Maximum number of instances for autoscaling.
+* `scaling.scale_out_cooldown`: Time in seconds to wait before scaling out.
+* `scaling.scale_in_cooldown`: Time in seconds to wait before scaling in.
+* `scaling.rps_per_instance`: Requests per second per instance. If you are already familiar with aws AutoScaling, this value is essentially `SageMakerVariantInvocationsPerInstance/60`. i.e. `rps_per_instance` describes the minimum number of invocations per second per instance before an instance is autoscaled out.
 
 ### Create a new deployment
 
