@@ -87,27 +87,27 @@ You can try out the deployment script with the IrisClassifier for the iris datas
 
 You can also enable autoscaling for your deployment by adding `scaling` parameter in the config file as follows:
 
-    ```json
-    {
-        "region": "us-west-1",
-        "skip_stack_deployment": false,
-        "instance_type": "ml.t2.medium",
-        "initial_instance_count": 1,
-        "workers": 3,
-        "timeout": 60,
-        "enable_data_capture": false,
-        "data_capture_s3_prefix": "s3://bucket-name/optional/predix",
-        "data_capture_sample_percent": 100,
-        "scaling": {
-            "disblae": false,
-            "min_instances": 1,
-            "max_instances": 4,
-            "scale_out_cooldown": 300,
-            "scale_in_cooldown": 300,
-            "rps_per_instance": 0.9
-        }
+```json
+{
+    "region": "us-west-1",
+    "skip_stack_deployment": false,
+    "instance_type": "ml.t2.medium",
+    "initial_instance_count": 1,
+    "workers": 3,
+    "timeout": 60,
+    "enable_data_capture": false,
+    "data_capture_s3_prefix": "s3://bucket-name/optional/predix",
+    "data_capture_sample_percent": 100,
+    "scaling": {
+        "disblae": false,
+        "min_instances": 1,
+        "max_instances": 4,
+        "scale_out_cooldown": 300,
+        "scale_in_cooldown": 300,
+        "rps_per_instance": 0.9
     }
-    ```
+}
+```
 
 If you ignore `scaling` parameter, autoscaling will be disabled. Or you can disable autoscaling by setting `scaling.disable` to `true` in the config file.
 
@@ -144,7 +144,7 @@ A sample configuration file has been given has been provided [here](sagemaker_co
 * `enable_data_capture`: Enable Sagemaker capture data from requests and responses and store the captured data to AWS S3
 * `data_capture_s3_prefix`: S3 bucket path for store captured data
 * `data_capture_sample_percent`: Percentage of the data will be captured to S3 bucket.
-* `scaling`: Enable autoscaling for Sagemaker endpoint.
+* `scaling`: Enable and configure autoscaling for Sagemaker endpoint.
 * `scaling.disable`: Disable autoscaling for Sagemaker endpoint.
 * `scaling.min_instances`: Minimum number of instances for autoscaling.
 * `scaling.max_instances`: Maximum number of instances for autoscaling.
