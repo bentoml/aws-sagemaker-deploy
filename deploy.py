@@ -93,7 +93,7 @@ def deploy(bento_bundle_path, deployment_name, config_json):
     # generate config for sagemaker endpoint
     sagemaker_resources.update(gen_endpoint(endpoint_name, endpoint_config_name))
     scaling = deployment_config.get("scaling", None)
-    if scaling:
+    if scaling and scaling.get("disable", False) is False:
         # assert deployment_config[""]
         sagemaker_resources.update(
             gen_endpoint_scaling(
