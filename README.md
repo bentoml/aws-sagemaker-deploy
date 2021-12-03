@@ -99,7 +99,7 @@ You can also enable autoscaling for your deployment by adding `scaling` paramete
     "data_capture_s3_prefix": "s3://bucket-name/optional/predix",
     "data_capture_sample_percent": 100,
     "scaling": {
-        "disblae": false,
+        "disable": false,
         "min_instances": 1,
         "max_instances": 4,
         "scale_out_cooldown": 300,
