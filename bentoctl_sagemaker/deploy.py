@@ -1,31 +1,25 @@
-import sys
 import os
 
-from utils import (
+from .utils import (
+    console,
     run_shell_command,
-    get_configuration_value,
     create_ecr_repository_if_not_exists,
     get_ecr_login_info,
     build_docker_image,
     push_docker_image_to_repository,
     gen_cloudformation_template_with_resources,
-    console,
 )
-from sagemaker.generate_deployable import generate_deployable
-from sagemaker.generate_resource_names import generate_resource_names
-from sagemaker.generate_docker_image_tag import generate_docker_image_tag
-from sagemaker.generate_resources import (
-    gen_model,
-    gen_endpoint,
-    gen_endpoint_config,
-    gen_api_gateway,
-)
+from .generate_deployable import generate_deployable
+from .generate_resource_names import generate_resource_names
+from .generate_resource import gen_model, gen_endpoint_config, gen_endpoint, gen_api_gateway
+from .generate_docker_image_tag import generate_docker_image_tag
 
 
-def deploy(bento_bundle_path, deployment_name, config_json):
+
+def deploy(bento_path, deployment_name, deployment_spec):
     # create deployable
     deployable_path, bento_name, bento_version = generate_deployable(
-        bento_bundle_path, deployment_name
+        bento_path, deployment_name
     )
     # generate names
     (
@@ -35,15 +29,14 @@ def deploy(bento_bundle_path, deployment_name, config_json):
         endpoint_name,
         api_gateway_name,
     ) = generate_resource_names(deployment_name, bento_version)
-    deployment_config = get_configuration_value(config_json)
 
     registry_id, registry_uri = create_ecr_repository_if_not_exists(
-        deployment_config["region"],
+        deployment_spec["region"],
         model_repo_name,
     )
     console.print(f"Created ECR repo [[b]{model_repo_name}[/b]]")
 
-    _, username, password = get_ecr_login_info(deployment_config["region"], registry_id)
+    _, username, password = get_ecr_login_info(deployment_spec["region"], registry_id)
     image_tag = generate_docker_image_tag(registry_uri, bento_name, bento_version)
     with console.status("Building image"):
         build_docker_image(
@@ -56,7 +49,7 @@ def deploy(bento_bundle_path, deployment_name, config_json):
     console.print(f"Image built and pushed [[b]{image_tag}[/b]]")
 
     # if skip_stack_deployment is given in the config file, return
-    if deployment_config.get("skip_stack_deployment", False):
+    if deployment_spec.get("skip_stack_deployment", False):
         console.print(
             "Skipping creation of sagemaker resources. 'skip_stack_deployment'"
             " option is set in the config"
@@ -70,8 +63,8 @@ def deploy(bento_bundle_path, deployment_name, config_json):
         gen_model(
             model_name,
             image_tag,
-            deployment_config["timeout"],
-            deployment_config["workers"],
+            deployment_spec["timeout"],
+            deployment_spec["workers"],
         )
     )
     # generate config for sagemaker endpoint_config
@@ -79,11 +72,11 @@ def deploy(bento_bundle_path, deployment_name, config_json):
         gen_endpoint_config(
             endpoint_config_name=endpoint_config_name,
             model_name=model_name,
-            initial_instance_count=deployment_config["initial_instance_count"],
-            instance_type=deployment_config["instance_type"],
-            enable_data_capture=deployment_config.get("enable_data_capture", False),
-            data_capture_s3_prefix=deployment_config.get("data_capture_s3_prefix"),
-            data_capture_sample_percent=deployment_config.get(
+            initial_instance_count=deployment_spec["initial_instance_count"],
+            instance_type=deployment_spec["instance_type"],
+            enable_data_capture=deployment_spec.get("enable_data_capture", False),
+            data_capture_s3_prefix=deployment_spec.get("data_capture_s3_prefix"),
+            data_capture_sample_percent=deployment_spec.get(
                 "data_capture_sample_percent"
             ),
         )
@@ -95,8 +88,8 @@ def deploy(bento_bundle_path, deployment_name, config_json):
         gen_api_gateway(
             api_gateway_name,
             endpoint_name,
-            deployment_config["timeout"],
-            bento_bundle_path,
+            deployment_spec["timeout"],
+            bento_path,
         )
     )
 
@@ -112,7 +105,7 @@ def deploy(bento_bundle_path, deployment_name, config_json):
             [
                 "aws",
                 "--region",
-                deployment_config["region"],
+                deployment_spec["region"],
                 "cloudformation",
                 "deploy",
                 "--stack-name",
@@ -123,14 +116,3 @@ def deploy(bento_bundle_path, deployment_name, config_json):
                 "CAPABILITY_IAM",
             ]
         )
-
-
-if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        raise Exception("Please provide deployment name, bundle path and API name")
-    bento_bundle_path = sys.argv[1]
-    deployment_name = sys.argv[2]
-    config_json = sys.argv[3] if len(sys.argv) == 4 else "sagemaker_config.json"
-
-    deploy(bento_bundle_path, deployment_name, config_json)
-    console.print("[bold green]Deployment Complete!")

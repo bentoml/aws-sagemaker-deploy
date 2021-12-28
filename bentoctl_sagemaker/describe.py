@@ -1,26 +1,22 @@
-import sys
-import json
-
 import boto3
-from botocore.exceptions import ClientError
-from utils import get_configuration_value
-from sagemaker.generate_resource_names import generate_resource_names
-from rich.pretty import pprint
+import botocore.exceptions import ClientError
+
+from .utils import console
+from .generate_resource_names import generate_resource_names
 
 
-def describe(deployment_name, config_file_path):
+def describe(deployment_name, deployment_spec, return_json=False):
     _, _, _, endpoint_name, _ = generate_resource_names(deployment_name)
-    sagemaker_config = get_configuration_value(config_file_path)
 
     # if skip_stack_deployment is present in config.
-    if sagemaker_config.get("skip_stack_deployment", False):
+    if deployment_spec.get("skip_stack_deployment", False):
         return None
 
-    cf_client = boto3.client("cloudformation", sagemaker_config["region"])
+    cf_client = boto3.client("cloudformation", deployment_spec["region"])
     try:
         stack_info = cf_client.describe_stacks(StackName=endpoint_name)
     except ClientError:
-        print(f"Unable to find {deployment_name} in your cloudformation stack.")
+        console.print(f"Unable to find {deployment_name} in your cloudformation stack.")
         return
 
     info_json = {}
@@ -44,13 +40,3 @@ def describe(deployment_name, config_file_path):
     info_json.update(outputs)
 
     return info_json
-
-
-if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        raise Exception("Please provide deployment name and API name")
-    deployment_name = sys.argv[1]
-    config_json = sys.argv[2] if len(sys.argv) == 3 else "sagemaker_config.json"
-
-    result = describe(deployment_name, config_json)
-    pprint(result)
