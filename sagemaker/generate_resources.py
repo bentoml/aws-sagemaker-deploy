@@ -111,6 +111,45 @@ def gen_endpoint(endpoint_name, endpoint_config_name):
     return endpoint
 
 
+def gen_endpoint_scaling(endpoint_name, scaling_policy_name, scale_config):
+    """
+    Generate the endpoint scaling resource
+    """
+    endpoint_scaling = {
+        "ScalingTarget": {
+            "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+            "Properties": {
+                "MaxCapacity": scale_config['max_instances'],
+                "MinCapacity": scale_config['min_instances'],
+                "ResourceId": f"endpoint/{endpoint_name}/variant/default",
+                "RoleARN": {"Fn::GetAtt": ["ExecutionRole", "Arn"]},
+                "ScalableDimension": "sagemaker:variant:DesiredInstanceCount",
+                "ServiceNamespace": "sagemaker",
+            },
+            "DependsOn": [
+                "SagemakerEndpoint"
+            ],
+        },
+        "ScalingPolicy": {
+            "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+            "Properties": {
+                "PolicyName": scaling_policy_name,
+                "PolicyType": "TargetTrackingScaling",
+                "ScalingTargetId": {"Ref": "ScalingTarget"},
+                "TargetTrackingScalingPolicyConfiguration": {
+                    "TargetValue": scale_config['rps_per_instance'] * 60,
+                    "ScaleInCooldown": scale_config['scale_in_cooldown'],
+                    "ScaleOutCooldown": scale_config['scale_out_cooldown'],
+                    "PredefinedMetricSpecification": {
+                        "PredefinedMetricType": "SageMakerVariantInvocationsPerInstance"
+                    },
+                },
+            },
+        },
+    }
+    return endpoint_scaling
+
+
 def gen_api_gateway(api_gateway_name, endpoint_name, timeout, bento_bundle_path):
     # basic API Gateway Config
     api_gateway = {
