@@ -1,13 +1,14 @@
-# AWS Sagemaker deployment tool
-
-[![Generic badge](https://img.shields.io/badge/Release-Alpha-<COLOR>.svg)](https://shields.io/)
+<div align="center">
+    <h1>AWS Sagemaker Operator</h1>
+    <img src="https://img.shields.io/badge/Release-Alpha-<COLOR>.svg"/>
+    <br>
+    <p align="center">
+      <img width=40% src="https://user-images.githubusercontent.com/5261489/149308825-912c7cec-a943-40f4-ac6c-ae21512bcbc5.png" alt="sagemaker logo"/>
+    </p>
+</div>
 
 Sagemaker is a fully managed service for building ML models. BentoML provides great support
 for deploying BentoService to AWS Sagemaker without the additional process and work from users. With BentoML, users can enjoy the performance of Sagemaker with any popular ML frameworks.
-
-<p align="center">
-  <img src="demo.gif" alt="demo of aws-lambda-deploy tool"/>
-</p>
 
 <!--ts-->
 
@@ -33,15 +34,102 @@ for deploying BentoService to AWS Sagemaker without the additional process and w
     - Configure AWS account instruction: https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html
 - Docker is installed and running on the machine.
     - Install instruction: https://docs.docker.com/install
-- Install required python packages
-    - `$ pip install -r requirements.txt`
 
+## Quickstart with bentoctl
 
-## Quickstart
+Bentoctl is a CLI tool that you can use to deploy bentos to any cloud service. It makes configuring and managing your deployments super easy. To try this out make sure you have a working bentoml service. If not you can go through this quickstart with any of the examples from the [quickstart](https://github.com/bentoml/gallery/tree/main/quickstart).
 
-You can try out the deployment script with the IrisClassifier for the iris dataset that is given in the [BentoML quick start guide](https://github.com/bentoml/BentoML/blob/master/guides/quick-start/bentoml-quick-start-guide.ipynb)
+With that lets deploy our first bento to sagemaker.
 
-1. Build and save Bento Bundle from [BentoML quick start guide](https://github.com/bentoml/BentoML/blob/master/guides/quick-start/bentoml-quick-start-guide.ipynb)
+1. Install bentoctl via pip.
+```
+$ pip install bentoctl
+```
+
+2. Add AWS Sagemaker operator. Operators are plugins for bentoctl that add support for different cloud services.
+```
+$ bentoctl operator add aws-sagemaker
+```
+
+3. Deploy to sagemaker. When you call `bentoctl deploy` without passing a deployment_config.yaml it will launch interactive program to generate `deployment_config.yaml` file for your deployment. A `deployment_config.yaml` file configures your deployment. 
+```
+$ bentoctl deploy --display-deployment-info
+
+Bentoctl Interactive Deployment Spec Builder
+
+Welcome! You are now in interactive mode.
+
+This mode will help you setup the deployment_spec.yaml file required for
+deployment. Fill out the appropriate values for the fields.
+
+(deployment spec will be saved to: ./deployment_spec.yaml)
+
+api_version: v1
+metadata:
+    name: test
+    operator: aws-sagemaker
+spec:
+    bento: testservice:bwmjyyttcoy6zdhpusy4drbc6
+    region: ap-south-1
+    skip_stack_deployment: False
+    instance_type: ml.t2.medium
+    initial_instance_count: 1
+    workers: 3
+    timeout: 60
+    enable_data_capture: False
+    data_capture_s3_prefix: ''
+    data_capture_sample_size: 1
+filename for deployment_config [deployment_config.yaml]:
+deployment config generated to: deployment_config.yaml
+
+deploying with deployment_spec.yaml...
+Success!
+
+{
+│   'StackId': 'arn:aws:cloudformation:ap-south-1:213386773652:stack/test-stack/6e766f80-6992-11ec-b5ac-06ea5db619ac',
+│   'StackName': 'test-stack',
+│   'StackStatus': 'UPDATE_COMPLETE',
+│   'CreationTime': '12/30/2021, 17:03:38',
+│   'LastUpdatedTime': '01/04/2022, 16:37:14',
+│   'EndpointUrl': 'https://fwxcofm8q7.execute-api.ap-south-1.amazonaws.com/Prod'
+}
+```
+
+4. Check endpoint. We will try and test the endpoint The url for the endpoint given in the output of the describe command or you can also check the API Gateway through the AWS console.
+
+    ```bash
+    $ curl -i \
+      --header "Content-Type: application/json" \
+      --request POST \
+      --data '[[5.1, 3.5, 1.4, 0.2]]' \
+      https://fwxcofm8q7.execute-api.ap-south-1.amazonaws.com/Prod/predict
+
+    # Sample output
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    Content-Length: 3
+    Connection: keep-alive
+    Date: Tue, 21 Jan 2020 22:43:17 GMT
+    x-amzn-RequestId: f49d29ed-c09c-4870-b362-4cf493556cf4
+    x-amz-apigw-id: GrC0AEHYPHcF3aA=
+    X-Amzn-Trace-Id: Root=1-5e277e7f-e9c0e4c0796bc6f4c36af98c;Sampled=0
+    X-Cache: Miss from cloudfront
+    Via: 1.1 bb248e7fabd9781d3ed921f068507334.cloudfront.net (CloudFront)
+    X-Amz-Cf-Pop: SFO5-C1
+    X-Amz-Cf-Id: HZzIJUcEUL8aBI0KcmG35rsG-71KSOcLUNmuYR4wdRb6MZupv9IOpA==
+
+    [0]%
+
+5. Delete deployment
+```
+$ bentoctl delete -f deployment_config.yaml
+```
+
+## Quickstart with scripts
+
+You can try out the deployment script with the IrisClassifier for the iris dataset that is given in the [BentoML quick start guide](https://github.com/bentoml/gallery/tree/main/quickstart)
+
+1. Build and save Bento Bundle from [BentoML quick start guide (https://github.com/bentoml/gallery/tree/main/quickstart)
 
 2. Copy and change the [sample config file](sagemaker_config.json) given and change it according to your deployment specifications. Check out the [config section](#configuration-options) to find the differenet options.
 
