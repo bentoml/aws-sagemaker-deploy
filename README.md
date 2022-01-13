@@ -9,6 +9,23 @@ for deploying BentoService to AWS Sagemaker without the additional process and w
   <img src="demo.gif" alt="demo of aws-lambda-deploy tool"/>
 </p>
 
+<!--ts-->
+
+## Table of Contents
+
+   * [Prerequisites](README.md#prerequisites)
+   * [Quickstart](README.md#quickstart)
+   * [The Internals](README.md#the-internals)
+   * [Deployment operations](README.md#deployment-operations)
+      * [configuration options](README.md#configuration-options)
+      * [Create a new deployment](README.md#create-a-new-deployment)
+      * [Update an existing deployment](README.md#update-an-existing-deployment)
+      * [Describe deployment status and information](README.md#describe-deployment-status-and-information)
+      * [Delete deployment](README.md#delete-deployment)
+
+<!-- Added by: jjmachan, at: Thursday 13 January 2022 03:16:57 PM IST -->
+
+<!--te-->
 ## Prerequisites
 
 - An active AWS account configured on the machine with AWS CLI installed and configured
