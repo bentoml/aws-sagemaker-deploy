@@ -3,7 +3,6 @@
 import argparse
 import os
 
-import google_cloud_run_deploy
 import bentoctl_sagemaker
 
 parser = argparse.ArgumentParser(
@@ -27,4 +26,3 @@ bentoctl_sagemaker.deploy(args.bento_bundle_path, args.deployment_name, deployme
 bentoctl_sagemaker.console.print("[bold green]Deployment Successful!")
 # show details of the deployment
 bentoctl_sagemaker.describe(args.deployment_name, args.config_json)
-

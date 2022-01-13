@@ -11,9 +11,13 @@ from .utils import (
 )
 from .generate_deployable import generate_deployable
 from .generate_resource_names import generate_resource_names
-from .generate_resource import gen_model, gen_endpoint_config, gen_endpoint, gen_api_gateway
+from .generate_resources import (
+    gen_model,
+    gen_endpoint_config,
+    gen_endpoint,
+    gen_api_gateway,
+)
 from .generate_docker_image_tag import generate_docker_image_tag
-
 
 
 def deploy(bento_path, deployment_name, deployment_spec):
@@ -77,7 +81,7 @@ def deploy(bento_path, deployment_name, deployment_spec):
             enable_data_capture=deployment_spec.get("enable_data_capture", False),
             data_capture_s3_prefix=deployment_spec.get("data_capture_s3_prefix"),
             data_capture_sample_percent=deployment_spec.get(
-                "data_capture_sample_percent"
+                "data_capture_sample_percent", 0
             ),
         )
     )

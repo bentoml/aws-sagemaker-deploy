@@ -1,5 +1,5 @@
-from bentoml.saved_bundle import load_bento_service_metadata
-from sagemaker.lambda_function import LAMBDA_FUNCION_CODE
+from .utils import load_bento_apis_list, load_bento_tag
+from .lambda_function import LAMBDA_FUNCION_CODE
 
 
 def gen_model(model_name, image_tag, timeout, num_of_workers):
@@ -65,15 +65,6 @@ def gen_endpoint_config(
             "DependsOn": "SagemakerModel",
             "Properties": {
                 # "EndpointConfigName": endpoint_config_name,
-                "DataCaptureConfig": {
-                    "EnableCapture": enable_data_capture,
-                    "InitialSamplingPercentage": data_capture_sample_percent,
-                    "DestinationS3Uri": data_capture_s3_prefix,
-                    "CaptureOptions": [
-                        {"CaptureMode": "Input"},
-                        {"CaptureMode": "Output"},
-                    ],
-                },
                 "ProductionVariants": [
                     {
                         "InitialInstanceCount": initial_instance_count,
@@ -86,6 +77,22 @@ def gen_endpoint_config(
             },
         },
     }
+
+    if enable_data_capture:
+        data_capture_properties = {
+            "DataCaptureConfig": {
+                "EnableCapture": enable_data_capture,
+                "InitialSamplingPercentage": data_capture_sample_percent,
+                "DestinationS3Uri": data_capture_s3_prefix,
+                "CaptureOptions": [
+                    {"CaptureMode": "Input"},
+                    {"CaptureMode": "Output"},
+                ],
+            }
+        }
+        endpoint_config["SagemakerEndpointConfig"][
+            "Properties"
+        ] = data_capture_properties
 
     return endpoint_config
 
@@ -191,8 +198,8 @@ def gen_api_gateway(api_gateway_name, endpoint_name, timeout, bento_bundle_path)
     }
 
     # add routes from bentoservice to API Gateway
-    bento_metadata = load_bento_service_metadata(bento_bundle_path)
-    for api in bento_metadata.apis:
+    apis = load_bento_apis_list(bento_bundle_path)
+    for _, api in apis.items():
         route_name = f"{api.name}Route".lower()
         api_gateway[route_name] = {
             "Type": "AWS::ApiGatewayV2::Route",

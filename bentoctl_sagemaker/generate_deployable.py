@@ -1,32 +1,35 @@
 import os
 import shutil
-import sys
 
-from bentoml.saved_bundle import load_bento_service_metadata
-
-from utils import is_present
+from .utils import is_present, load_bento_tag
 
 BENTO_SERVICE_SAGEMAKER_DOCKERFILE = """\
 FROM {docker_base_image}
+RUN pip install git+https://github.com/bentoml/BentoML.git@main
 
-# the env var $PORT is required by heroku container runtime
-ENV PORT 8080
-EXPOSE $PORT
+ARG BENTO_PATH=/home/bento
+ENV BENTO_PATH=$BENTO_PATH
+ENV BENTOML_HOME=/home/
 
-RUN apt-get update --fix-missing --allow-releaseinfo-change && \
-    apt-get install -y nginx && \
-    apt-get clean
+RUN mkdir $BENTO_PATH
+WORKDIR $BENTO_PATH
 
-# gevent required by AWS Sagemaker
-RUN pip install gevent>=20.9.0
 
-# copy over model files
-COPY . /bento
-WORKDIR /bento
+# copy over env directory
+COPY ./env ./env
+RUN chmod +x ./env/docker/init.sh
+RUN ./env/docker/init.sh ensure_python
+RUN ./env/docker/init.sh restore_conda_env
+RUN ./env/docker/init.sh install_pip_packages
+RUN ./env/docker/init.sh install_wheels
+RUN ./env/docker/init.sh user_setup_script
 
-RUN if [ -f /bento/bentoml-init.sh ]; then bash -c /bento/bentoml-init.sh; fi
+# copy over all remaining bento files
+COPY . ./
 
-ENV PATH="/bento:$PATH"
+# Default port for BentoServer
+EXPOSE 5000
+ENV PATH="$BENTO_PATH:$PATH"
 """  # noqa: E501
 
 
@@ -35,7 +38,8 @@ def generate_sagemaker_target(bento_metadata, bento_path, sagemaker_project_dir)
     if is_present(sagemaker_project_dir):
         return sagemaker_project_dir
 
-    docker_base_image = bento_metadata.env.docker_base_image
+    # docker_base_image = bento_metadata.env.docker_base_image
+    docker_base_image = "bentoml/bento-server:1.0.0a1-python3.8-debian-runtime"
     shutil.copytree(bento_path, sagemaker_project_dir)
 
     with open(os.path.join(sagemaker_project_dir, "Dockerfile"), "w") as f:
@@ -46,11 +50,8 @@ def generate_sagemaker_target(bento_metadata, bento_path, sagemaker_project_dir)
         )
 
     dir_name = os.path.join(os.path.dirname(__file__))
-    nginx_conf_path = os.path.join(dir_name, "nginx.conf")
-    shutil.copy(nginx_conf_path, os.path.join(sagemaker_project_dir, "nginx.conf"))
-
-    wsgi_py_path = os.path.join(dir_name, "wsgi.py")
-    shutil.copy(wsgi_py_path, os.path.join(sagemaker_project_dir, "wsgi.py"))
+    sagemaker_svc_path = os.path.join(dir_name, "./sagemaker_service.py")
+    shutil.copy(sagemaker_svc_path, os.path.join(sagemaker_project_dir, "sagemaker_service.py"))
 
     serve_file_path = os.path.join(dir_name, "serve")
     shutil.copy(serve_file_path, os.path.join(sagemaker_project_dir, "serve"))
@@ -62,10 +63,10 @@ def generate_sagemaker_target(bento_metadata, bento_path, sagemaker_project_dir)
 
 
 def generate_deployable(bento_bundle_path, deployment_name):
-    bento_metadata = load_bento_service_metadata(bento_bundle_path)
+    bento_tag = load_bento_tag(bento_bundle_path)
 
-    dir_name = f"{bento_metadata.name}_{bento_metadata.version}_sagemaker_deployable"
+    dir_name = f"{bento_tag.name}_{bento_tag.version}_sagemaker_deployable"
     sagemaker_project_dir = generate_sagemaker_target(
-        bento_metadata, bento_bundle_path, os.path.abspath(dir_name)
+        bento_tag, bento_bundle_path, os.path.abspath(dir_name)
     )
-    return sagemaker_project_dir, bento_metadata.name, bento_metadata.version
+    return sagemaker_project_dir, bento_tag.name, bento_tag.version

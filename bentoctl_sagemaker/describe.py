@@ -1,5 +1,5 @@
 import boto3
-import botocore.exceptions import ClientError
+from botocore.exceptions import ClientError
 
 from .utils import console
 from .generate_resource_names import generate_resource_names
