@@ -47,12 +47,14 @@ OPERATOR_SCHEMA = {
     },
     "data_capture_s3_prefix": {
         "required": False,
+        "default": '',
         "type": "string",
         "help_message": "S3 prefix for the data capture for the sagemaker deployment",
     },
     "data_capture_sample_size": {
         "required": False,
         "type": "integer",
+        "default": "1",
         "coerce": int,
         "help_message": "Sample size for the data capture for the sagemaker deployment",
         "max": 100,
