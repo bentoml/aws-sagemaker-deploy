@@ -14,17 +14,19 @@ for deploying BentoService to AWS Sagemaker without the additional process and w
 
 ## Table of Contents
 
-   * [Prerequisites](README.md#prerequisites)
-   * [Quickstart](README.md#quickstart)
-   * [The Internals](README.md#the-internals)
-   * [Deployment operations](README.md#deployment-operations)
-      * [configuration options](README.md#configuration-options)
-      * [Create a new deployment](README.md#create-a-new-deployment)
-      * [Update an existing deployment](README.md#update-an-existing-deployment)
-      * [Describe deployment status and information](README.md#describe-deployment-status-and-information)
-      * [Delete deployment](README.md#delete-deployment)
+   * [Table of Contents](#table-of-contents)
+   * [Prerequisites](#prerequisites)
+   * [Quickstart with bentoctl](#quickstart-with-bentoctl)
+   * [Quickstart with scripts](#quickstart-with-scripts)
+   * [The Internals](#the-internals)
+   * [Deployment operations](#deployment-operations)
+      * [configuration options](#configuration-options)
+      * [Create a new deployment](#create-a-new-deployment)
+      * [Update an existing deployment](#update-an-existing-deployment)
+      * [Describe deployment status and information](#describe-deployment-status-and-information)
+      * [Delete deployment](#delete-deployment)
 
-<!-- Added by: jjmachan, at: Thursday 13 January 2022 03:16:57 PM IST -->
+<!-- Added by: jjmachan, at: Thursday 13 January 2022 03:52:58 PM IST -->
 
 <!--te-->
 ## Prerequisites
