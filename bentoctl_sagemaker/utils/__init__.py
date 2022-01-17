@@ -7,9 +7,23 @@ import shutil
 import docker
 import boto3
 from rich.console import Console
+from bentoml.bentos import import_bento
+from bentoml import load as bentoml_load_service
 
 
 console = Console(highlight=False)
+
+
+def load_bento_tag(bento_bundle_path):
+    bento = import_bento(bento_bundle_path)
+    return bento.tag
+
+def load_bento_apis_list(bento_bundle_path):
+    cwd = os.getcwd()
+    svc = bentoml_load_service(bento_bundle_path)
+    os.chdir(cwd)
+
+    return svc._apis
 
 
 def is_present(project_path):
@@ -22,8 +36,8 @@ def is_present(project_path):
     """
     if os.path.exists(project_path):
         response = console.input(
-                f"Existing deployable found [[b]{os.path.relpath(project_path)}[/b]]!"
-                " Override? (y/n): "
+            f"Existing deployable found [[b]{os.path.relpath(project_path)}[/b]]!"
+            " Override? (y/n): "
         )
         if response.lower() in ["yes", "y", ""]:
             print("overriding existing deployable!")
@@ -125,10 +139,8 @@ def gen_cloudformation_template_with_resources(resources: dict, project_dir):
         "Resources": resources,
         "Outputs": {
             "EndpointURL": {
-                "Value": {
-                    "Fn::Sub": "${HttpApi.ApiEndpoint}"
-                },
-                "Description": "The endpoint for Sagemaker inference"
+                "Value": {"Fn::Sub": "${HttpApi.ApiEndpoint}"},
+                "Description": "The endpoint for Sagemaker inference",
             },
         },
     }
