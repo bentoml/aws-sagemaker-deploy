@@ -1,5 +1,5 @@
 from .utils import console, run_shell_command
-from .generate_resource_names import generate_resource_names
+from .utils.generate_resource_names import generate_resource_names
 
 def delete(deployment_name, deployment_spec):
     (

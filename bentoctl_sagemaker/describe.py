@@ -2,7 +2,7 @@ import boto3
 from botocore.exceptions import ClientError
 
 from .utils import console
-from .generate_resource_names import generate_resource_names
+from .utils.generate_resource_names import generate_resource_names
 
 
 def describe(deployment_name, deployment_spec, return_json=False):

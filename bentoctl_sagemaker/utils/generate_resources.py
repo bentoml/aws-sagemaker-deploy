@@ -1,5 +1,5 @@
-from .utils import load_bento_apis_list, load_bento_tag
-from .lambda_function import LAMBDA_FUNCION_CODE
+from . import load_bento_apis_list
+from ..lambda_function import LAMBDA_FUNCION_CODE
 
 
 def gen_model(model_name, image_tag, timeout, num_of_workers):

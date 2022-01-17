@@ -9,15 +9,15 @@ from .utils import (
     push_docker_image_to_repository,
     gen_cloudformation_template_with_resources,
 )
-from .generate_deployable import generate_deployable
-from .generate_resource_names import generate_resource_names
-from .generate_resources import (
+from .utils.generate_deployable import generate_deployable
+from .utils.generate_resource_names import generate_resource_names
+from .utils.generate_resources import (
     gen_model,
     gen_endpoint_config,
     gen_endpoint,
     gen_api_gateway,
 )
-from .generate_docker_image_tag import generate_docker_image_tag
+from .utils.generate_docker_image_tag import generate_docker_image_tag
 
 
 def deploy(bento_path, deployment_name, deployment_spec):
@@ -120,3 +120,5 @@ def deploy(bento_path, deployment_name, deployment_spec):
                 "CAPABILITY_IAM",
             ]
         )
+
+    return deployable_path
