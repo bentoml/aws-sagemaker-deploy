@@ -6,17 +6,29 @@ import shutil
 
 import docker
 import boto3
+import fs
 from rich.console import Console
-from bentoml.bentos import import_bento
+from bentoml.bentos import Bento
 from bentoml import load as bentoml_load_service
 
 
 console = Console(highlight=False)
 
 
-def load_bento_tag(bento_bundle_path):
-    bento = import_bento(bento_bundle_path)
-    return bento.tag
+def get_metadata(path: str):
+    metadata = {}
+
+    bento = Bento.from_fs(fs.open_fs(path))
+    metadata["tag"] = bento.tag
+    metadata["bentoml_version"] = ".".join(bento.info.bentoml_version.split(".")[:3])
+
+    python_version_txt_path = "env/python/version.txt"
+    python_version_txt_path = os.path.join(path, python_version_txt_path)
+    with open(python_version_txt_path, "r") as f:
+        python_version = f.read()
+    metadata["python_version"] = ".".join(python_version.split(".")[:2])
+
+    return metadata
 
 def load_bento_apis_list(bento_bundle_path):
     cwd = os.getcwd()
