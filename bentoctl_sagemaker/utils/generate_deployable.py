@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from . import is_present, load_bento_tag
+from . import is_present, get_metadata
 
 BENTO_SERVICE_SAGEMAKER_DOCKERFILE = """\
 FROM {docker_base_image}
@@ -38,9 +38,8 @@ def generate_sagemaker_target(bento_metadata, bento_path, sagemaker_project_dir)
     if is_present(sagemaker_project_dir):
         return sagemaker_project_dir
 
-    # TODO: get docker tag from bento
-    # docker_base_image = bento_metadata.env.docker_base_image
-    docker_base_image = "bentoml/bento-server:1.0.0a1-python3.8-debian-runtime"
+    # docker_base_image formate "bentoml/bento-server:1.0.0a1-python3.8-debian-runtime"
+    docker_base_image = f"bentoml/bento-server:{bento_metadata['bentoml_version']}-python{bento_metadata['python_version']}-debian-runtime"
     shutil.copytree(bento_path, sagemaker_project_dir)
 
     with open(os.path.join(sagemaker_project_dir, "Dockerfile"), "w") as f:
@@ -52,7 +51,9 @@ def generate_sagemaker_target(bento_metadata, bento_path, sagemaker_project_dir)
 
     dir_name = os.path.join(os.path.dirname(__file__))
     sagemaker_svc_path = os.path.join(dir_name, "../sagemaker_service.py")
-    shutil.copy(sagemaker_svc_path, os.path.join(sagemaker_project_dir, "sagemaker_service.py"))
+    shutil.copy(
+        sagemaker_svc_path, os.path.join(sagemaker_project_dir, "sagemaker_service.py")
+    )
 
     serve_file_path = os.path.join(dir_name, "../serve")
     shutil.copy(serve_file_path, os.path.join(sagemaker_project_dir, "serve"))
@@ -64,10 +65,11 @@ def generate_sagemaker_target(bento_metadata, bento_path, sagemaker_project_dir)
 
 
 def generate_deployable(bento_bundle_path, deployment_name):
-    bento_tag = load_bento_tag(bento_bundle_path)
+    bento_metadata = get_metadata(bento_bundle_path)
+    bento_tag = bento_metadata["tag"]
 
     dir_name = f"{deployment_name}-{bento_tag.name}:{bento_tag.version:4}"
     sagemaker_project_dir = generate_sagemaker_target(
-        bento_tag, bento_bundle_path, os.path.abspath(dir_name)
+        bento_metadata, bento_bundle_path, os.path.abspath(dir_name)
     )
     return sagemaker_project_dir, bento_tag.name, bento_tag.version
