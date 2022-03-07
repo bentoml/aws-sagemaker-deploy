@@ -23,7 +23,7 @@ def load_bento_apis_list(bento_bundle_path):
     svc = bentoml_load_service(bento_bundle_path)
     os.chdir(cwd)
 
-    return svc._apis
+    return svc.apis
 
 
 def is_present(project_path):
