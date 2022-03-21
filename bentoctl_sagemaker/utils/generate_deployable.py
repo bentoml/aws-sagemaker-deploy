@@ -5,7 +5,6 @@ from . import is_present, get_metadata
 
 BENTO_SERVICE_SAGEMAKER_DOCKERFILE = """\
 FROM {docker_base_image}
-RUN pip install git+https://github.com/bentoml/BentoML.git@main
 
 ARG BENTO_PATH=/home/bento
 ENV BENTO_PATH=$BENTO_PATH
