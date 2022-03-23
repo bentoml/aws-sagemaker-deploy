@@ -21,43 +21,7 @@ def sigterm_handler(bentoserver_pid):
     sys.exit(0)
 
 
-def _serve(bento_server_timeout: int, bento_server_workers: int):
-    # link the log streams to stdout/err so they will be logged to the container logs
-    subprocess.check_call(["ln", "-sf", "/dev/stdout", "/var/log/nginx/access.log"])
-    subprocess.check_call(["ln", "-sf", "/dev/stderr", "/var/log/nginx/error.log"])
-
-    nginx_config_path = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "nginx.conf")
-    )
-    nginx = subprocess.Popen(["nginx", "-c", nginx_config_path])
-    gunicorn_app = subprocess.Popen(
-        [
-            "gunicorn",
-            "--timeout",
-            str(bento_server_timeout),
-            "-k",
-            "uvicorn.workers.UvicornWorker",
-            "-b",
-            "unix:/tmp/gunicorn.sock",
-            "-w",
-            str(bento_server_workers),
-            "asgi:app",
-        ]
-    )
-    signal.signal(
-        signal.SIGTERM, lambda a, b: sigterm_handler(nginx.pid, gunicorn_app.pid)
-    )
-
-    pids = {nginx.pid, gunicorn_app.pid}
-    while True:
-        pid, _ = os.wait()
-        if pid in pids:
-            break
-    sigterm_handler(nginx.pid, gunicorn_app.pid)
-    print("Inference server exiting")
-
-
-def _serve_new(bento_server_timeout: int, bento_server_workers: int):
+def start_bentoml_production_server():
     bento_server = subprocess.Popen(
         [
             "bentoml",
@@ -68,18 +32,16 @@ def _serve_new(bento_server_timeout: int, bento_server_workers: int):
             "sagemaker_service:svc",
         ]
     )
-    signal.signal(signal.SIGTERM, lambda a: sigterm_handler(bento_server.pid))
+    signal.signal(signal.SIGTERM, lambda _: sigterm_handler(bento_server.pid))
 
     pids = {bento_server.pid}
     while True:
         pid, _ = os.wait()
         if pid in pids:
             break
-    sigterm_handler(bento_server.pid)
     print("Inference server exiting")
+    sigterm_handler(bento_server.pid)
 
 
 if __name__ == "__main__":
-    gunicorn_timeout = os.environ.get("BENTOML_GUNICORN_TIMEOUT", 1000)
-    worker_count = os.environ.get("BENTOML_GUNICORN_NUM_OF_WORKERS", 1)
-    _serve_new(gunicorn_timeout, worker_count)
+    start_bentoml_production_server()
