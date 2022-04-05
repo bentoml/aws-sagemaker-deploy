@@ -46,18 +46,6 @@ variable "initial_instance_count" {
   type = number
 }
 
-variable "enable_data_capture" {
-  type = bool
-}
-
-variable "destination_s3_uri" {
-  type = string
-}
-
-variable "initial_sampling_percentage" {
-  type = number
-}
-
 
 ################################################################################
 # Resource definitions
@@ -109,12 +97,6 @@ resource "aws_sagemaker_endpoint_configuration" "endpoint_config" {
     model_name             = aws_sagemaker_model.sagemaker_model.name
     variant_name           = "default"
   }
-
-  data_capture_config {
-    enable_capture              = var.enable_data_capture
-    initial_sampling_percentage = var.initial_sampling_percentage
-    destination_s3_uri          = var.destination_s3_uri
-  }
 }
 
 resource "aws_sagemaker_endpoint" "sagemaker_endpoint" {
@@ -165,7 +147,6 @@ def lambda_handler(event, context):
 
     try:
         sagemaker_response = runtime.invoke_endpoint(
-            EndpointName="testsagemaker-endpoint",
             ContentType=safeget(event, 'headers', 'content-type', default='application/json'),
             CustomAttributes=safeget(event, 'path', default='')[1:],
             Body=b64decode(event.get('body')) if event.get('isBase64Encoded') else event.get('body')
