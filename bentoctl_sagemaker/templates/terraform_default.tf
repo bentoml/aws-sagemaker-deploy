@@ -23,6 +23,10 @@ variable "deployment_name" {
   type = string
 }
 
+variable "image_tag" {
+  type = string
+}
+
 variable "image_repository" {
   type = string
 }
@@ -251,6 +255,12 @@ resource "aws_cloudwatch_log_group" "api_gw" {
 ################################################################################
 # Output definitions
 ################################################################################
+output "ecr_image_tag" {
+  description = "Image Tag of the ECR image that was build and pushed"
+
+  value = var.image_tag
+}
+
 output "base_url" {
   description = "Base URL for API Gateway stage."
 
