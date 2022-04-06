@@ -1,18 +1,17 @@
 import os
-import sys
 import shutil
+import sys
 import tempfile
 import time
 
 import requests
+from classifier import TestService
 from pandas import DataFrame
 
-from classifier import TestService
-
 sys.path.append("./")
+from delete import delete
 from deploy import deploy
 from describe import describe
-from delete import delete
 
 
 class Setup:
@@ -142,9 +141,10 @@ def test_image(url):
     WHEN an image is passed as bytes or mulitpart/form-data
     THEN it accepts it and returns the size
     """
+    from io import BytesIO
+
     import numpy as np
     from PIL import Image
-    from io import BytesIO
 
     img = Image.fromarray(np.uint8(np.random.rand(10, 10, 3) * 256))
     byte_io = BytesIO()

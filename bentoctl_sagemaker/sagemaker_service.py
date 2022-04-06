@@ -1,14 +1,14 @@
+import bentoml
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import JSONResponse
-from starlette.routing import Route, Mount
-from starlette.types import ASGIApp, Scope, Receive, Send
-import bentoml
+from starlette.routing import Mount, Route
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 AWS_SAGEMAKER_SERVE_PORT = 8080
 AWS_CUSTOM_ENDPOINT_HEADER = "X-Amzn-SageMaker-Custom-Attributes"
 BENTOML_HEALTH_CHECK_PATH = "/livez"
-svc = bentoml.load(".", working_dir='.')
+svc = bentoml.load(".", working_dir=".")
 
 
 class SagemakerMiddleware:

@@ -1,15 +1,5 @@
-from .deploy import deploy
-from .update import update
-from .describe import describe
-from .delete import delete
-from .utils import console, get_configuration_value
+from bentoctl_sagemaker.create_deployable import create_deployable
+from bentoctl_sagemaker.generate import generate
+from bentoctl_sagemaker.registry_utils import get_registry_info
 
-
-__all__ = [
-    'deploy',
-    'update',
-    'describe',
-    'delete',
-    'console',
-    'get_configuration_value',
-]
+__all__ = ["generate", "create_deployable", "get_registry_info"]
