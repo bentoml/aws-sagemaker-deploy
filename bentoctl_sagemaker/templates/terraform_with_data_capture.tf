@@ -46,9 +46,19 @@ variable "timeout" {
 variable "instance_type" {
   type = string
 }
+
 variable "initial_instance_count" {
   type = number
 }
+
+variable "destination_s3_uri" {
+  type = string
+}
+
+variable "initial_sampling_percentage" {
+  type = string
+}
+
 
 ################################################################################
 # Resource definitions
@@ -99,6 +109,16 @@ resource "aws_sagemaker_endpoint_configuration" "endpoint_config" {
     instance_type          = var.instance_type
     model_name             = aws_sagemaker_model.sagemaker_model.name
     variant_name           = "default"
+  }
+
+  data_capture_config {
+    enable_capture              = true
+    destination_s3_uri          = var.destination_s3_uri
+    initial_sampling_percentage = var.initial_sampling_percentage
+
+    capture_options {
+      capture_mode = "Input"
+    }
   }
 }
 
