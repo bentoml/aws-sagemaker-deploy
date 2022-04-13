@@ -100,6 +100,7 @@ resource "aws_sagemaker_endpoint_configuration" "endpoint_config" {
     model_name             = aws_sagemaker_model.sagemaker_model.name
     variant_name           = "default"
   }
+}
 
 resource "aws_sagemaker_endpoint" "sagemaker_endpoint" {
   name                 = "${var.deployment_name}-endpoint"

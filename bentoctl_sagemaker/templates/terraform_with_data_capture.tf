@@ -52,11 +52,11 @@ variable "initial_instance_count" {
 }
 
 variable "destination_s3_uri" {
-    type = string
+  type = string
 }
 
 variable "initial_sampling_percentage" {
-    type = string
+  type = string
 }
 
 
@@ -112,14 +112,14 @@ resource "aws_sagemaker_endpoint_configuration" "endpoint_config" {
   }
 
   data_capture_config {
-        enable_capture = true
-        destination_s3_uri = var.destination_s3_uri
-        initial_sampling_percentage = var.initial_sampling_percentage
+    enable_capture              = true
+    destination_s3_uri          = var.destination_s3_uri
+    initial_sampling_percentage = var.initial_sampling_percentage
 
-        capture_options {
-            capture_mode = "Input"
-        }
+    capture_options {
+      capture_mode = "Input"
     }
+  }
 }
 
 resource "aws_sagemaker_endpoint" "sagemaker_endpoint" {
