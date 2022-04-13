@@ -117,7 +117,7 @@ resource "aws_sagemaker_endpoint_configuration" "endpoint_config" {
         initial_sampling_percentage = var.initial_sampling_percentage
 
         capture_options {
-            capture_mode = Input
+            capture_mode = "Input"
         }
     }
 }
