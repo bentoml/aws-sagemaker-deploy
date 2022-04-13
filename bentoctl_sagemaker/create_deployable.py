@@ -38,11 +38,20 @@ def generate_dockerfile_in(deployable_path, bento_metadata):
 
 
 def create_deployable(
-    bento_path, destination_dir, bento_metadata, overwrite_deployable
+        bento_path: str, destination_dir: str, bento_metadata: dict
 ):
     """
     The deployable is the bento along with all the modifications (if any)
     requried to deploy to the cloud service.
+
+    Parameters
+    ----------
+    bento_path: str
+        Path to the bento from the bento store.
+    destination_dir: str
+        directory to create the deployable into.
+    bento_metadata: dict
+        metadata about the bento.
 
     Returns
     -------
