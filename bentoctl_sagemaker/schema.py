@@ -46,3 +46,5 @@ data_capture_schema = {
         "min": 1,
     },
 }
+
+OPERATOR_SCHEMA = {**operator_schema, **data_capture_schema}
