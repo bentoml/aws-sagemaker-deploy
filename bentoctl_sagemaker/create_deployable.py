@@ -38,7 +38,10 @@ def generate_dockerfile_in(deployable_path, bento_metadata):
 
 
 def create_deployable(
-        bento_path: str, destination_dir: str, bento_metadata: dict
+    bento_path: str,
+    destination_dir: str,
+    bento_metadata: dict,
+    overwrite_deployable=None,
 ):
     """
     The deployable is the bento along with all the modifications (if any)
