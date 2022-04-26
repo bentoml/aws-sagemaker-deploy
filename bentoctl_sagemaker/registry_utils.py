@@ -37,16 +37,19 @@ def create_ecr_repository_if_not_exists(region, repository_name):
     return repository_id, repository_uri
 
 
-def create_repository(deployment_name, operator_spec):
+def create_repository(repository_name, operator_spec):
     """
     Create ECR repository and return the information.
     """
     repo_id, _ = create_ecr_repository_if_not_exists(
-        operator_spec["region"], deployment_name
+        operator_spec["region"], repository_name
     )
-    repo_url, username, password = get_ecr_login_info(operator_spec["region"], repo_id)
+    registry_url, username, password = get_ecr_login_info(
+        operator_spec["region"], repo_id
+    )
+    repository_url = f"{registry_url}/{repository_name}"
 
-    return repo_url, username, password
+    return repository_url, username, password
 
 
 def delete_repository(repository_name, operator_spec):
