@@ -5,6 +5,9 @@
 Sagemaker is a fully managed service for building ML models. BentoML provides great support
 for deploying BentoService to AWS Sagemaker without the additional process and work from users. With [BentoML serving framework](https://github.com/bentoml/BentoML) and [bentoctl](https://github.com/bentoml/bentoctl) users can enjoy the performance and scalability of Sagemaker with any popular ML frameworks.
 
+> **Note:** This operator is compatible with BentoML version 1.0.0 and above. For older versions, please switch to the branch `pre-v1.0` and follow the instructions in the README.md.
+
+
 ## Table of Contents
 
    * [Quickstart with bentoctl](#quickstart-with-bentoctl)
