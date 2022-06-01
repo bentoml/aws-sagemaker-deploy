@@ -1,9 +1,13 @@
 import os
 import shutil
 
+from bentoctl.docker_utils import DOCKERFILE_PATH
+from bentoml._internal.bento.build_config import DockerOptions
+from bentoml._internal.bento.gen import generate_dockerfile
+
 root_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sagemaker")
 SAGEMAKER_SERVICE_PATH = os.path.join(root_dir, "sagemaker_service.py")
-DOCKER_TEMPLATE_PATH = os.path.join(root_dir, "Dockerfile.template")
+BENTOCTL_USER_TEMPLATE = os.path.join(root_dir, "bentoctl_user_template.j2")
 SERVE_SCRIPT_PATH = os.path.join(root_dir, "serve")
 
 
@@ -15,25 +19,27 @@ def generate_sagemaker_service_in(deployable_path):
 
 
 def generate_serve_script_in(deployable_path):
-    shutil.copy(SERVE_SCRIPT_PATH, os.path.join(deployable_path, "serve"))
+    serve_dest = os.path.join(deployable_path, os.path.dirname(DOCKERFILE_PATH), "serve")
+    shutil.copy(SERVE_SCRIPT_PATH, serve_dest)
     # permission 755 is required for entry script 'serve'
-    os.chmod(os.path.join(deployable_path, "serve"), 0o755)
+    os.chmod(serve_dest, 0o755)
 
     return deployable_path
 
 
 def generate_dockerfile_in(deployable_path, bento_metadata):
-    # docker_base_image formate "bentoml/bento-server:1.0.0a1-python3.8-debian-runtime"
-    docker_base_image = f"bentoml/bento-server:{bento_metadata['bentoml_version']}-python{bento_metadata['python_version']}-debian-runtime"
+    docker_options_for_sagemaker = DockerOptions(
+        dockerfile_template=BENTOCTL_USER_TEMPLATE
+    )
+    dockerfile_generate = generate_dockerfile(
+        docker_options_for_sagemaker.with_defaults(), use_conda=False
+    )
+    breakpoint()
+    
+    dockerfile_path = os.path.join(deployable_path, DOCKERFILE_PATH)
+    with open(dockerfile_path, "w") as dockerfile:
+        dockerfile.write(dockerfile_generate)
 
-    dockerfile_path = os.path.join(deployable_path, "Dockerfile")
-    with open(dockerfile_path, "w") as dockerfile, open(
-        DOCKER_TEMPLATE_PATH, "r"
-    ) as dockerfile_template:
-        dockerfile_template = dockerfile_template.read()
-        dockerfile.write(
-            dockerfile_template.format(docker_base_image=docker_base_image)
-        )
     return dockerfile_path
 
 

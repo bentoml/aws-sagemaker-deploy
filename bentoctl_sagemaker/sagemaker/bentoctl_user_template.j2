@@ -1,0 +1,5 @@
+{% extends bento__dockerfile %}
+{% block SETUP_BENTO_ENTRYPOINT %}
+EXPOSE 8080
+USER bentoml
+{% endblock %}
