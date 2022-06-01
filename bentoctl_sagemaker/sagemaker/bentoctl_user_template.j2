@@ -2,4 +2,5 @@
 {% block SETUP_BENTO_ENTRYPOINT %}
 EXPOSE 8080
 USER bentoml
+RUN chmod +x env/docker/serve
 {% endblock %}
