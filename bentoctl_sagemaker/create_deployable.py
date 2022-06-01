@@ -1,7 +1,7 @@
 import os
 import shutil
 
-root_dir = os.path.abspath(os.path.dirname(__file__))
+root_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sagemaker")
 SAGEMAKER_SERVICE_PATH = os.path.join(root_dir, "sagemaker_service.py")
 DOCKER_TEMPLATE_PATH = os.path.join(root_dir, "Dockerfile.template")
 SERVE_SCRIPT_PATH = os.path.join(root_dir, "serve")
@@ -58,13 +58,8 @@ def create_deployable(
 
     Returns
     -------
-    dockerfile_path : str
-        path to the dockerfile.
     docker_context_path : str
         path to the docker context.
-    additional_build_args : dict
-        Any addition build arguments that need to be passed to the
-        docker build command
     """
     deployable_path = os.path.join(destination_dir, "bentoctl_deployable")
     docker_context_path = deployable_path
