@@ -34,7 +34,6 @@ def generate_dockerfile_in(deployable_path, bento_metadata):
     dockerfile_generate = generate_dockerfile(
         docker_options_for_sagemaker.with_defaults(), use_conda=False
     )
-    breakpoint()
     
     dockerfile_path = os.path.join(deployable_path, DOCKERFILE_PATH)
     with open(dockerfile_path, "w") as dockerfile:
