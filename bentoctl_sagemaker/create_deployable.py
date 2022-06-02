@@ -39,8 +39,6 @@ def generate_dockerfile_in(deployable_path, bento_metadata):
     with open(dockerfile_path, "w") as dockerfile:
         dockerfile.write(dockerfile_generate)
 
-    return dockerfile_path
-
 
 def create_deployable(
     bento_path: str,
@@ -71,9 +69,8 @@ def create_deployable(
 
     # copy over the bento bundle
     shutil.copytree(bento_path, deployable_path)
-    dockerfile_path = generate_dockerfile_in(deployable_path, bento_metadata)
+    generate_dockerfile_in(deployable_path, bento_metadata)
     generate_sagemaker_service_in(deployable_path)
     generate_serve_script_in(deployable_path)
 
-    additional_build_args = None
-    return dockerfile_path, docker_context_path, additional_build_args
+    return docker_context_path
