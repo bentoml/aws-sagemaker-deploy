@@ -21,7 +21,7 @@ def create_deployable(
     destination_dir: str,
     bento_metadata: dict[str, Any],
     overwrite_deployable: bool,
-):
+) -> str:
     """
     The deployable is the bento along with all the modifications (if any)
     requried to deploy to the cloud service.
@@ -76,4 +76,4 @@ def create_deployable(
     # permission 755 is required for entry script 'serve'
     os.chmod(dockerfile_path.parent.joinpath("serve"), 0o755)
 
-    return deployable_path
+    return str(deployable_path)
