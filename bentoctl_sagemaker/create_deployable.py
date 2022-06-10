@@ -1,50 +1,26 @@
+from __future__ import annotations
+
 import os
 import shutil
+from pathlib import Path
+from typing import Any
 
-from bentoctl.docker_utils import DOCKERFILE_PATH
+from bentoml._internal.bento.bento import BentoInfo
 from bentoml._internal.bento.build_config import DockerOptions
 from bentoml._internal.bento.gen import generate_dockerfile
+from bentoml._internal.utils import bentoml_cattr
 
-root_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sagemaker")
-SAGEMAKER_SERVICE_PATH = os.path.join(root_dir, "sagemaker_service.py")
-BENTOCTL_USER_TEMPLATE = os.path.join(root_dir, "bentoctl_user_template.j2")
-SERVE_SCRIPT_PATH = os.path.join(root_dir, "serve")
-
-
-def generate_sagemaker_service_in(deployable_path):
-    shutil.copy(
-        SAGEMAKER_SERVICE_PATH,
-        os.path.join(deployable_path, "sagemaker_service.py"),
-    )
-
-
-def generate_serve_script_in(deployable_path):
-    serve_dest = os.path.join(deployable_path, os.path.dirname(DOCKERFILE_PATH), "serve")
-    shutil.copy(SERVE_SCRIPT_PATH, serve_dest)
-    # permission 755 is required for entry script 'serve'
-    os.chmod(serve_dest, 0o755)
-
-    return deployable_path
-
-
-def generate_dockerfile_in(deployable_path, bento_metadata):
-    docker_options_for_sagemaker = DockerOptions(
-        dockerfile_template=BENTOCTL_USER_TEMPLATE
-    )
-    dockerfile_generate = generate_dockerfile(
-        docker_options_for_sagemaker.with_defaults(), use_conda=False
-    )
-    
-    dockerfile_path = os.path.join(deployable_path, DOCKERFILE_PATH)
-    with open(dockerfile_path, "w") as dockerfile:
-        dockerfile.write(dockerfile_generate)
+root_dir = Path(os.path.abspath(os.path.dirname(__file__)), "sagemaker")
+SERVICE_PATH = os.path.join(root_dir, "service.py")
+TEMPLATE_PATH = os.path.join(root_dir, "template.j2")
+SERVE_PATH = os.path.join(root_dir, "serve")
 
 
 def create_deployable(
     bento_path: str,
     destination_dir: str,
-    bento_metadata: dict,
-    overwrite_deployable=None,
+    bento_metadata: dict[str, Any],
+    overwrite_deployable: bool,
 ):
     """
     The deployable is the bento along with all the modifications (if any)
@@ -64,13 +40,40 @@ def create_deployable(
     docker_context_path : str
         path to the docker context.
     """
-    deployable_path = os.path.join(destination_dir, "bentoctl_deployable")
-    docker_context_path = deployable_path
+    deployable_path = Path(destination_dir)
 
     # copy over the bento bundle
-    shutil.copytree(bento_path, deployable_path)
-    generate_dockerfile_in(deployable_path, bento_metadata)
-    generate_sagemaker_service_in(deployable_path)
-    generate_serve_script_in(deployable_path)
+    shutil.copytree(bento_path, deployable_path, dirs_exist_ok=True)
 
-    return docker_context_path
+    bento_metafile = Path(bento_path, "bento.yaml")
+    with bento_metafile.open("r", encoding="utf-8") as metafile:
+        info = BentoInfo.from_yaml_file(metafile)
+
+    options = bentoml_cattr.unstructure(info.docker)
+    options["dockerfile_template"] = TEMPLATE_PATH
+
+    dockerfile_path = deployable_path.joinpath("env", "docker", "Dockerfile")
+    with dockerfile_path.open("w", encoding="utf-8") as dockerfile:
+        dockerfile.write(
+            generate_dockerfile(
+                DockerOptions(**options).with_defaults(),
+                str(deployable_path),
+                use_conda=any(
+                    i is not None
+                    for i in bentoml_cattr.unstructure(info.conda).values()
+                ),
+            )
+        )
+
+    # copy sagemaker service.py
+    shutil.copy(
+        SERVICE_PATH,
+        os.path.join(deployable_path, "service.py"),
+    )
+
+    # then copy the serve script
+    shutil.copy(SERVE_PATH, dockerfile_path.parent.joinpath("serve"))
+    # permission 755 is required for entry script 'serve'
+    os.chmod(dockerfile_path.parent.joinpath("serve"), 0o755)
+
+    return deployable_path
