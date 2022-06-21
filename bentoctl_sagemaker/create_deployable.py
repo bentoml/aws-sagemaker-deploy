@@ -1,14 +1,19 @@
 from __future__ import annotations
 
 import os
-import shutil
 from pathlib import Path
+from sys import version_info
 from typing import Any
 
 from bentoml._internal.bento.bento import BentoInfo
 from bentoml._internal.bento.build_config import DockerOptions
 from bentoml._internal.bento.gen import generate_dockerfile
 from bentoml._internal.utils import bentoml_cattr
+
+if version_info >= (3, 8):
+    from shutil import copytree
+else:
+    from backports.shutil_copytree import copytree
 
 root_dir = Path(os.path.abspath(os.path.dirname(__file__)), "sagemaker")
 SERVICE_PATH = os.path.join(root_dir, "service.py")
@@ -43,7 +48,7 @@ def create_deployable(
     deployable_path = Path(destination_dir)
 
     # copy over the bento bundle
-    shutil.copytree(bento_path, deployable_path, dirs_exist_ok=True)
+    copytree(bento_path, deployable_path, dirs_exist_ok=True)
 
     bento_metafile = Path(bento_path, "bento.yaml")
     with bento_metafile.open("r", encoding="utf-8") as metafile:
@@ -58,10 +63,7 @@ def create_deployable(
             generate_dockerfile(
                 DockerOptions(**options).with_defaults(),
                 str(deployable_path),
-                use_conda=any(
-                    i is not None
-                    for i in bentoml_cattr.unstructure(info.conda).values()
-                ),
+                use_conda=not info.conda.is_empty(),
             )
         )
 

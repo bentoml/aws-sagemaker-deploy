@@ -4,7 +4,31 @@ import shutil
 from bentoctl.exceptions import TemplateExists, TemplateTypeNotDefined
 
 from bentoctl_sagemaker.parameters import DeploymentParams
-from bentoctl_sagemaker.schema import data_capture_schema
+
+data_capture_schema = {
+    "enable_data_capture": {
+        "required": False,
+        "default": False,
+        "type": "boolean",
+        "coerce": bool,
+        "help_message": "Enable data capture for the sagemaker deployment",
+    },
+    "destination_s3_uri": {
+        "required": False,
+        "default": "",
+        "type": "string",
+        "help_message": "S3 URI for the data capture for the sagemaker deployment",
+    },
+    "initial_sampling_percentage": {
+        "required": False,
+        "type": "integer",
+        "default": "1",
+        "coerce": int,
+        "help_message": "Percentage of the data capture for the sagemaker deployment. Value between 0 and 100",
+        "max": 100,
+        "min": 1,
+    },
+}
 
 
 def copy_template(template_name: str, destination_dir: str):
