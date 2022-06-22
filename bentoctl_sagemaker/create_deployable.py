@@ -5,6 +5,7 @@ from pathlib import Path
 from sys import version_info
 from typing import Any
 
+import shutil
 from attr import asdict
 from bentoml._internal.bento.bento import BentoInfo
 from bentoml._internal.bento.build_config import DockerOptions
@@ -59,6 +60,7 @@ def create_deployable(
 
     dockerfile_path = deployable_path.joinpath("env", "docker", "Dockerfile")
     with dockerfile_path.open("w", encoding="utf-8") as dockerfile:
+        print(info.conda.is_empty())
         dockerfile.write(
             generate_dockerfile(
                 DockerOptions(**options).with_defaults(),
