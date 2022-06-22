@@ -60,7 +60,6 @@ def create_deployable(
 
     dockerfile_path = deployable_path.joinpath("env", "docker", "Dockerfile")
     with dockerfile_path.open("w", encoding="utf-8") as dockerfile:
-        print(info.conda.is_empty())
         dockerfile.write(
             generate_dockerfile(
                 DockerOptions(**options).with_defaults(),
