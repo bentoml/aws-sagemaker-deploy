@@ -75,8 +75,9 @@ def create_deployable(
     )
 
     # then copy the serve script
-    shutil.copy(SERVE_PATH, dockerfile_path.parent.joinpath("serve"))
+    serve_fspath = os.fspath(dockerfile_path.parent.joinpath("serve"))
+    shutil.copy(SERVE_PATH, serve_fspath)
     # permission 755 is required for entry script 'serve'
-    os.chmod(dockerfile_path.parent.joinpath("serve"), 0o755)
+    os.chmod(serve_fspath, 0o755)
 
     return str(deployable_path)
