@@ -5,10 +5,10 @@ from pathlib import Path
 from sys import version_info
 from typing import Any
 
+from attr import asdict
 from bentoml._internal.bento.bento import BentoInfo
 from bentoml._internal.bento.build_config import DockerOptions
 from bentoml._internal.bento.gen import generate_dockerfile
-from bentoml._internal.utils import bentoml_cattr
 
 if version_info >= (3, 8):
     from shutil import copytree
@@ -54,7 +54,7 @@ def create_deployable(
     with bento_metafile.open("r", encoding="utf-8") as metafile:
         info = BentoInfo.from_yaml_file(metafile)
 
-    options = bentoml_cattr.unstructure(info.docker)
+    options = asdict(info.docker)
     options["dockerfile_template"] = TEMPLATE_PATH
 
     dockerfile_path = deployable_path.joinpath("env", "docker", "Dockerfile")
