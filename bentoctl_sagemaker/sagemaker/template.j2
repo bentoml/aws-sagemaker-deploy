@@ -2,7 +2,7 @@
 {% block SETUP_BENTO_ENTRYPOINT %}
 EXPOSE 8080
 USER bentoml
-RUN chmod +x {{ bento__path }}/env/docker/serve
+RUN chmod +x {{ bento__path }}/serve
 
-ENV PATH="${PATH}:{{ bento__path }}/env/docker/"
+ENV PATH="${PATH}:{{ bento__path }}"
 {% endblock %}

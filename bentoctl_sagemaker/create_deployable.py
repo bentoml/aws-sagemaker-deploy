@@ -71,11 +71,11 @@ def create_deployable(
     # copy sagemaker service.py
     shutil.copy(
         SERVICE_PATH,
-        os.path.join(deployable_path, "service.py"),
+        os.path.join(deployable_path, "sagemaker_service.py"),
     )
 
     # then copy the serve script
-    serve_fspath = os.fspath(dockerfile_path.parent.joinpath("serve"))
+    serve_fspath = os.path.join(deployable_path, "serve")
     shutil.copy(SERVE_PATH, serve_fspath)
     # permission 755 is required for entry script 'serve'
     os.chmod(serve_fspath, 0o755)
