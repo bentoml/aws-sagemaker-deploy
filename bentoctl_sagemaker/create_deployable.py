@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import os
+import shutil
 from pathlib import Path
 from sys import version_info
 from typing import Any
 
-import shutil
 from attr import asdict
 from bentoml._internal.bento.bento import BentoInfo
 from bentoml._internal.bento.build_config import DockerOptions
