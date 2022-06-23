@@ -19,17 +19,17 @@ class SagemakerMiddleware:
         self.app = app
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        req = Request(scope, receive)
-        if req.url.path == "/ping":
-            scope["path"] = BENTOML_HEALTH_CHECK_PATH
+        if scope["type"] == "http":
+            req = Request(scope, receive)
+            if req.url.path == "/ping":
+                scope["path"] = BENTOML_HEALTH_CHECK_PATH
 
-        if req.url.path == "/invocations":
-            assert AWS_CUSTOM_ENDPOINT_HEADER in req.headers
-            api_path = req.headers[AWS_CUSTOM_ENDPOINT_HEADER]
-            scope["path"] = "/" + api_path
+            if req.url.path == "/invocations":
+                assert AWS_CUSTOM_ENDPOINT_HEADER in req.headers
+                api_path = req.headers[AWS_CUSTOM_ENDPOINT_HEADER]
+                scope["path"] = "/" + api_path
 
         await self.app(scope, receive, send)
-        return
 
 
 svc.add_asgi_middleware(SagemakerMiddleware)

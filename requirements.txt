@@ -1,7 +1,8 @@
-bentoml>0.10.0
+bentoml>=1.0.0rc1
 boto3
 docker
 pandas
 rich
 numpy
 pillow
+backports.shutil_copytree

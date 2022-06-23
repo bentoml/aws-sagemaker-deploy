@@ -32,7 +32,7 @@ def start_bentoml_production_server():
             "sagemaker_service:svc",
         ]
     )
-    signal.signal(signal.SIGTERM, lambda _: sigterm_handler(bento_server.pid))
+    signal.signal(signal.SIGTERM, lambda: sigterm_handler(bento_server.pid))
 
     pids = {bento_server.pid}
     while True:
