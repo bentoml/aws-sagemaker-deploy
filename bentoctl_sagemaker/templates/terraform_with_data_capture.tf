@@ -171,7 +171,7 @@ def lambda_handler(event, context):
     try:
         sagemaker_response = runtime.invoke_endpoint(
             EndpointName="${var.deployment_name}-endpoint",
-            ContentType=safeget(event, 'headers', 'content-type', default='application/json'),
+            ContentType=safeget(event, 'headers', 'Content-Type', default='application/json'),
             CustomAttributes=safeget(event, 'path', default='')[1:],
             Body=b64decode(event.get('body')) if event.get('isBase64Encoded') else event.get('body')
         )
