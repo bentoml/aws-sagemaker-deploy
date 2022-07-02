@@ -92,7 +92,10 @@ resource "aws_iam_role" "iam_role_sagemaker" {
 }
 
 resource "aws_sagemaker_model" "sagemaker_model" {
-  name               = "${var.deployment_name}-model"
+  lifecycle {
+    create_before_destroy = true
+  }
+  name               = "${var.deployment_name}-model-${var.image_version}"
   execution_role_arn = resource.aws_iam_role.iam_role_sagemaker.arn
   primary_container {
     image = "${data.aws_ecr_repository.service.repository_url}@${data.aws_ecr_image.service_image.id}"
@@ -101,7 +104,10 @@ resource "aws_sagemaker_model" "sagemaker_model" {
 }
 
 resource "aws_sagemaker_endpoint_configuration" "endpoint_config" {
-  name = "${var.deployment_name}-endpoint-config"
+  lifecycle {
+    create_before_destroy = true
+  }
+  name = "${var.deployment_name}-endpoint-config-${var.image_version}"
 
   production_variants {
     initial_instance_count = var.initial_instance_count
