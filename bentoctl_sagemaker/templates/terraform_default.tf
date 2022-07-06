@@ -266,7 +266,7 @@ output "ecr_image_tag" {
   value = var.image_tag
 }
 
-output "base_url" {
+output "endpoint" {
   description = "Base URL for API Gateway stage."
 
   value = aws_apigatewayv2_stage.lambda.invoke_url
