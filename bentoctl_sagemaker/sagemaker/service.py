@@ -8,7 +8,10 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 AWS_SAGEMAKER_SERVE_PORT = 8080
 AWS_CUSTOM_ENDPOINT_HEADER = "X-Amzn-SageMaker-Custom-Attributes"
 BENTOML_HEALTH_CHECK_PATH = "/livez"
-svc = bentoml.load(".", working_dir=".")
+
+# use standalone_load so that the path is not changed back
+# after loading.
+svc = bentoml.load(".", standalone_load=True)
 
 
 class SagemakerMiddleware:
