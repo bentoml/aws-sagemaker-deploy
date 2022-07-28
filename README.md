@@ -21,7 +21,7 @@ This quickstart will walk you through deploying a bento as an AWS Sagemaker Endp
 
 ### Prerequisites
 
-1. Bentoml - BentoML version 1.0 and greater. Please follow the [Installation guide](https://docs.bentoml.org/en/latest/quickstart.html#installation).
+1. BentoML version 1.0 or above. Please follow the [Installation guide](https://docs.bentoml.org/en/latest/installation.html).
 2. Terraform - [Terraform](https://www.terraform.io/) is a tool for building, configuring, and managing infrastructure. Installation instruction: www.terraform.io/downloads
 3. AWS CLI - installed and configured with an AWS account with permission to Sagemaker, Lambda and ECR. Please follow the [Installation guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
 4. Docker - Install instruction: [docs.docker.com/install](https://docs.docker.com/install)
