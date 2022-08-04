@@ -176,7 +176,7 @@ This quickstart will walk you through deploying a bento as an AWS Sagemaker Endp
     0%
     ```
 
-> Note: You can also [invoke the Sagemaker endpoint directly](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_runtime_InvokeEndpoint.html). If there is only one service sagemaker deployment will choose that one. If there is more than one you can specify which service to use by passing the `X-Amzn-SageMaker-Custom-Attributes` with the name of the sevice.
+> Note: You can also [invoke the Sagemaker endpoint directly](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_runtime_InvokeEndpoint.html). If there is only one service, SageMaker deployment will choose that one. If there is more than one, you can specify which service to use by passing the `X-Amzn-SageMaker-Custom-Attributes` header with the name of the service as value.
    
 7. Delete deployment
     Use the `bentoctl destroy` command to remove the registry and the deployment
