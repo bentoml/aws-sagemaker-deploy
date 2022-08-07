@@ -9,6 +9,8 @@ AWS_SAGEMAKER_SERVE_PORT = 8080
 AWS_CUSTOM_ENDPOINT_HEADER = "X-Amzn-SageMaker-Custom-Attributes"
 BENTOML_HEALTH_CHECK_PATH = "/livez"
 
+logger = logging.getLogger(__name__)
+
 # use standalone_load so that the path is not changed back
 # after loading.
 svc = bentoml.load(".", standalone_load=True)
@@ -32,11 +34,11 @@ class SagemakerMiddleware:
                     if len(svc.apis) == 1:
                         # only one api, use it
                         api_path, *_ = svc.apis
-                        logging.warning(
+                        logger.info(
                             f"'{AWS_CUSTOM_ENDPOINT_HEADER}' not found in request header. Using defualt {api_path} service."
                         )
                     else:
-                        logging.error(
+                        logger.error(
                             f"'{AWS_CUSTOM_ENDPOINT_HEADER}' not found inside request header. If you are directly invoking the Sagemaker Endpoint pass in the '{AWS_CUSTOM_ENDPOINT_HEADER}' with the bentoml service name that you want to invoke."
                         )
                         raise BentoMLException(
@@ -45,7 +47,7 @@ class SagemakerMiddleware:
                 else:
                     api_path = req.headers[AWS_CUSTOM_ENDPOINT_HEADER]
                     if api_path not in svc.apis:
-                        logging.error(
+                        logger.error(
                             "API Service passed via the '{AWS_CUSTOM_ENDPOINT_HEADER}' not found in the bentoml service."
                         )
                         raise BentoMLException(
