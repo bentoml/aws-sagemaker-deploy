@@ -151,7 +151,7 @@ This quickstart will walk you through deploying a bento as an AWS Sagemaker Endp
 
         Outputs:
 
-        base_url = "https://rwfej5qsf6.execute-api.ap-south-1.amazonaws.com/"
+        endpoint = "https://rwfej5qsf6.execute-api.ap-south-1.amazonaws.com/"
         ecr_image_tag = "213386773652.dkr.ecr.ap-south-1.amazonaws.com/quickstart:sfx3dagmpogmockr"
         ```
 
@@ -160,7 +160,7 @@ This quickstart will walk you through deploying a bento as an AWS Sagemaker Endp
     The `iris_classifier` uses the `/classify` endpoint for receiving requests so the full URL for the classifier will be in the form `{EndpointUrl}/classify`.
 
     ```bash
-    URL=$(terraform output -json | jq -r .base_url.value)classify
+    URL=$(terraform output -json | jq -r .endpoint.value)classify
     curl -i \
       --header "Content-Type: application/json" \
       --request POST \
@@ -175,6 +175,8 @@ This quickstart will walk you through deploying a bento as an AWS Sagemaker Endp
 
     0%
     ```
+
+> Note: You can also [invoke the Sagemaker endpoint directly](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_runtime_InvokeEndpoint.html). If there is only one service, SageMaker deployment will choose that one. If there is more than one, you can specify which service to use by passing the `X-Amzn-SageMaker-Custom-Attributes` header with the name of the service as value.
    
 7. Delete deployment
     Use the `bentoctl destroy` command to remove the registry and the deployment
