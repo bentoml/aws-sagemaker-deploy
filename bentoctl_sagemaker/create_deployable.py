@@ -55,6 +55,13 @@ def create_deployable(
     with bento_metafile.open("r", encoding="utf-8") as metafile:
         info = BentoInfo.from_yaml_file(metafile)
 
+    enable_grpc = False
+    if hasattr(info.python, "extras_require"):
+        enable_grpc = (
+            info.python.extras_require is not None
+            and "grpc" in info.python.extras_require
+        )
+
     options = asdict(info.docker)
     options["dockerfile_template"] = TEMPLATE_PATH
 
@@ -65,6 +72,7 @@ def create_deployable(
                 DockerOptions(**options).with_defaults(),
                 str(deployable_path),
                 use_conda=not info.conda.is_empty(),
+                enable_grpc=enable_grpc,
             )
         )
 
