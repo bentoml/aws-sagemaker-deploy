@@ -31,7 +31,7 @@ This quickstart will walk you through deploying a bento as an AWS Sagemaker Endp
 
 1. Install bentoctl via pip
     ```
-    $ pip install --pre bentoctl
+    $ pip install bentoctl
     ```
 
 2. Install AWS Sagemaker operator
