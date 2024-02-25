@@ -1,6 +1,8 @@
-<div align="center">
-    <h1>AWS Sagemaker Operator</h1>
-</div>
+## ⚠️ BentoCTL project has been deprecated
+
+Plese see the latest BentoML documentation on OCI-container based deployment workflow: https://docs.bentoml.com/
+
+## AWS Sagemaker Operator
 
 Sagemaker is a fully managed service for building ML models. BentoML provides great support
 for deploying BentoService to AWS Sagemaker without the additional process and work from users. With [BentoML serving framework](https://github.com/bentoml/BentoML) and [bentoctl](https://github.com/bentoml/bentoctl) users can enjoy the performance and scalability of Sagemaker with any popular ML frameworks.
